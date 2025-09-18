@@ -1,0 +1,98 @@
+{% load static %}
+<section id="projects" class="projects section">
+    <div class="container section-title">
+        <h2>Projects</h2>
+        <p>Necessitatibus eius consequatur ex aliquid fuga eum quidem sint consectetur velit</p>
+    </div>
+    <div class="container" data-aos="fade-up" data-aos-delay="100">
+        <div class="projects-grid">
+
+            <!-- Project 1 -->
+            <div class="project-item" data-aos="zoom-in" data-aos-delay="100">
+                <div class="project-content">
+                    <div class="project-header">
+                        <span class="project-category">Commercial</span>
+                        <span class="project-status completed">Completed</span>
+                    </div>
+                    <h3 class="project-title">Metropolitan Office Tower</h3>
+                    <div class="project-details">
+                        <div class="project-info">
+                            <p>Innovative glass facade design with sustainable energy systems and modern workspace
+                                solutions.</p>
+                            <div class="project-specs">
+                                <span class="spec-item"><i class="bi bi-building"></i> 32 Floors</span>
+                                <span class="spec-item"><i class="bi bi-calendar-check"></i> 24 Months</span>
+                            </div>
+                        </div>
+                        <div class="project-location"><i class="bi bi-geo-alt-fill"></i><span>New York, NY</span></div>
+                    </div>
+                    <a href="{% url 'project-details' %}" class="project-link"><span>View Project</span><i
+                            class="bi bi-arrow-right"></i></a>
+                </div>
+                <div class="project-visual">
+                    <img src="{% static 'assets/img/construction/project-2.webp' %}" class="img-fluid" alt="">
+                    <div class="project-badge"><i class="bi bi-award"></i></div>
+                </div>
+            </div>
+
+            <!-- Project 2 -->
+            <div class="project-item" data-aos="zoom-in" data-aos-delay="200">
+                <div class="project-content">
+                    <div class="project-header">
+                        <span class="project-category">Residential</span>
+                        <span class="project-status in-progress">In Progress</span>
+                    </div>
+                    <h3 class="project-title">Riverside Luxury Homes</h3>
+                    <div class="project-details">
+                        <div class="project-info">
+                            <p>Premium residential development featuring eco-friendly materials and smart home
+                                integration.</p>
+                            <div class="project-specs">
+                                <span class="spec-item"><i class="bi bi-house"></i> 24 Units</span>
+                                <span class="spec-item"><i class="bi bi-calendar-check"></i> 18 Months</span>
+                            </div>
+                        </div>
+                        <div class="project-location"><i class="bi bi-geo-alt-fill"></i><span>Portland, OR</span></div>
+                    </div>
+                    <a href="{% url 'project-details' %}" class="project-link"><span>View Project</span><i
+                            class="bi bi-arrow-right"></i></a>
+                </div>
+                <div class="project-visual">
+                    <img src="{% static 'assets/img/construction/project-6.webp' %}" class="img-fluid" alt="">
+                    <div class="project-badge"><i class="bi bi-tools"></i></div>
+                </div>
+            </div>
+
+            <!-- Project 3 -->
+            <div class="project-item" data-aos="zoom-in" data-aos-delay="300">
+                <div class="project-content">
+                    <div class="project-header">
+                        <span class="project-category">Infrastructure</span>
+                        <span class="project-status completed">Completed</span>
+                    </div>
+                    <h3 class="project-title">Highway Bridge Reconstruction</h3>
+                    <div class="project-details">
+                        <div class="project-info">
+                            <p>Major infrastructure upgrade enhancing traffic flow and ensuring structural safety
+                                standards.</p>
+                            <div class="project-specs">
+                                <span class="spec-item"><i class="bi bi-rulers"></i> 2.5 Miles</span>
+                                <span class="spec-item"><i class="bi bi-calendar-check"></i> 36 Months</span>
+                            </div>
+                        </div>
+                        <div class="project-location"><i class="bi bi-geo-alt-fill"></i><span>Dallas, TX</span></div>
+                    </div>
+                    <a href="{% url 'project-details' %}" class="project-link"><span>View Project</span><i
+                            class="bi bi-arrow-right"></i></a>
+                </div>
+                <div class="project-visual">
+                    <img src="{% static 'assets/img/construction/project-10.webp' %}" class="img-fluid" alt="">
+                    <div class="project-badge"><i class="bi bi-gear"></i></div>
+                </div>
+            </div>
+
+            <!-- ... diğer project-item’lar aynı kalıp ... -->
+
+        </div>
+    </div>
+</section>

@@ -1,0 +1,62 @@
+{% load static %}
+<section id="about" class="about section">
+    <div class="container" data-aos="fade-up" data-aos-delay="100">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6">
+                <div class="about-content" data-aos="fade-right" data-aos-delay="200">
+                    <h2>Building Excellence Since 1995</h2>
+                    <p class="lead">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin gravida tortor in
+                        magna feugiat, quis faucibus libero commodo.</p>
+                    <p>Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Nulla
+                        facilisi...</p>
+
+                    <div class="achievement-boxes row g-4 mt-4">
+                        <div class="col-6 col-md-3" data-aos="fade-up" data-aos-delay="300">
+                            <div class="achievement-box"><h3>25+</h3>
+                                <p>Years Experience</p></div>
+                        </div>
+                        <div class="col-6 col-md-3" data-aos="fade-up" data-aos-delay="400">
+                            <div class="achievement-box"><h3>500+</h3>
+                                <p>Projects Completed</p></div>
+                        </div>
+                        <div class="col-6 col-md-3" data-aos="fade-up" data-aos-delay="500">
+                            <div class="achievement-box"><h3>100%</h3>
+                                <p>Client Satisfaction</p></div>
+                        </div>
+                        <div class="col-6 col-md-3" data-aos="fade-up" data-aos-delay="600">
+                            <div class="achievement-box"><h3>48</h3>
+                                <p>Team Members</p></div>
+                        </div>
+                    </div>
+
+                    <div class="certifications mt-5" data-aos="fade-up" data-aos-delay="700">
+                        <h5>Certifications &amp; Partnerships</h5>
+                        <div class="row g-3 align-items-center">
+                            <div class="col-4 col-md-3"><img src="{% static 'assets/img/construction/badge-4.webp' %}"
+                                                             class="img-fluid" alt=""></div>
+                            <div class="col-4 col-md-3"><img src="{% static 'assets/img/construction/badge-3.webp' %}"
+                                                             class="img-fluid" alt=""></div>
+                            <div class="col-4 col-md-3"><img src="{% static 'assets/img/construction/badge-5.webp' %}"
+                                                             class="img-fluid" alt=""></div>
+                        </div>
+                    </div>
+
+                    <div class="cta-container mt-5" data-aos="fade-up" data-aos-delay="800">
+                        <a href="{% url 'about' %}" class="btn btn-primary">Learn More About Us</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="about-image position-relative" data-aos="fade-left" data-aos-delay="200">
+                    <img src="{% static 'assets/img/construction/project-3.webp' %}"
+                         class="img-fluid main-image rounded" alt="">
+                    <div class="image-overlay"><img src="{% static 'assets/img/construction/project-7.webp' %}"
+                                                    class="img-fluid rounded" alt=""></div>
+                    <div class="experience-badge" data-aos="zoom-in" data-aos-delay="500"><span>25+</span>
+                        <p>Years of Experience</p></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

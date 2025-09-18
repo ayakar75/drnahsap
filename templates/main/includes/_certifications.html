@@ -1,0 +1,69 @@
+{% load static %}
+<section id="certifications" class="certifications section">
+    <div class="container section-title">
+        <h2>Certified &amp; Trusted</h2>
+        <p>Necessitatibus eius consequatur ex aliquid fuga eum quidem sint consectetur velit</p>
+    </div>
+    <div class="container" data-aos="fade-up" data-aos-delay="100">
+
+        <div class="row align-items-center mb-5 content">
+            <div class="col-lg-6" data-aos="fade-right" data-aos-delay="200">
+                <h2>Industry Certifications &amp; Excellence</h2>
+                <p>Vestibulum ante ipsum primis in faucibus orci luctus...</p>
+            </div>
+            <div class="col-lg-6" data-aos="fade-left" data-aos-delay="300">
+                <div class="badge-highlight">
+                    <img src="{% static 'assets/img/construction/badge-5.webp' %}" class="img-fluid" alt="">
+                    <div class="badge-content">
+                        <h4>Premier Contractor Status</h4>
+                        <p>Recognized by the state board for outstanding quality and safety standards</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="certification-grid" data-aos="fade-up" data-aos-delay="400">
+            {% for i in "1,2,3,4,6,7"|cut:"," %}
+                <!-- İstersen tek tek yaz: badge-1.webp ... badge-7.webp -->
+            {% endfor %}
+            <div class="cert-card" data-aos="flip-left" data-aos-delay="100">
+                <div class="cert-icon"><img src="{% static 'assets/img/construction/badge-1.webp' %}" class="img-fluid"
+                                            alt=""></div>
+                <div class="cert-details"><h5>ISO 9001:2015</h5><span class="cert-category">Quality Management</span>
+                    <p>Mauris blandit aliquet elit...</p></div>
+            </div>
+            <div class="cert-card" data-aos="flip-left" data-aos-delay="200">
+                <div class="cert-icon"><img src="{% static 'assets/img/construction/badge-2.webp' %}" class="img-fluid"
+                                            alt=""></div>
+                <div class="cert-details"><h5>OSHA 30-Hour</h5><span class="cert-category">Safety Standards</span>
+                    <p>Curabitur non nulla sit amet...</p></div>
+            </div>
+            <!-- ... diğer kartlar aynı kalıp ... -->
+        </div>
+
+        <div class="achievements-banner" data-aos="zoom-in" data-aos-delay="700">
+            <div class="row text-center">
+                <div class="col-lg-3 col-sm-6">
+                    <div class="achievement-item"><i class="bi bi-award"></i>
+                        <h3>15+</h3>
+                        <p>Industry Awards</p></div>
+                </div>
+                <div class="col-lg-3 col-sm-6">
+                    <div class="achievement-item"><i class="bi bi-shield-check"></i>
+                        <h3>Zero</h3>
+                        <p>Safety Incidents</p></div>
+                </div>
+                <div class="col-lg-3 col-sm-6">
+                    <div class="achievement-item"><i class="bi bi-clock-history"></i>
+                        <h3>18</h3>
+                        <p>Years Experience</p></div>
+                </div>
+                <div class="col-lg-3 col-sm-6">
+                    <div class="achievement-item"><i class="bi bi-people"></i>
+                        <h3>350+</h3>
+                        <p>Satisfied Clients</p></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

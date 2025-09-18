@@ -1,0 +1,94 @@
+{% load static %}
+<section id="testimonials" class="testimonials section">
+    <div class="container" data-aos="fade-up" data-aos-delay="100">
+
+        <div class="testimonials-slider swiper init-swiper">
+            <script type="application/json" class="swiper-config">
+                { "loop": true, "speed": 600, "autoplay": {"delay": 5000},
+                  "slidesPerView": 1, "spaceBetween": 30,
+                  "pagination": {"el": ".swiper-pagination","type":"bullets","clickable": true},
+                  "navigation": {"nextEl": ".swiper-button-next","prevEl": ".swiper-button-prev"} }
+            </script>
+
+            <div class="swiper-wrapper">
+                <div class="swiper-slide">
+                    <div class="testimonial-slide" data-aos="fade-up" data-aos-delay="200">
+                        <div class="testimonial-header">
+                            <div class="stars-rating">
+                                <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i
+                                    class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i
+                                    class="bi bi-star-fill"></i>
+                            </div>
+                            <div class="quote-icon"><i class="bi bi-quote"></i></div>
+                        </div>
+                        <div class="testimonial-body">
+                            <p>"Outstanding service quality and innovative solutions..."</p>
+                        </div>
+                        <div class="testimonial-footer">
+                            <div class="author-info">
+                                <img src="{% static 'assets/img/person/person-f-12.webp' %}" class="author-avatar"
+                                     alt="">
+                                <div class="author-details">
+                                    <h4>Sophia Martinez</h4><span class="role">Operations Director</span><span
+                                        class="company">TechVision Corp</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. ve 3. slaytlar -->
+                <div class="swiper-slide">
+                    <div class="testimonial-slide" data-aos="fade-up" data-aos-delay="300">
+                        <div class="testimonial-header">
+                            <div class="stars-rating">
+                                <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i
+                                    class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i
+                                    class="bi bi-star-fill"></i>
+                            </div>
+                            <div class="quote-icon"><i class="bi bi-quote"></i></div>
+                        </div>
+                        <div class="testimonial-body"><p>"Professional expertise and dedicated support..."</p></div>
+                        <div class="testimonial-footer">
+                            <div class="author-info">
+                                <img src="{% static 'assets/img/person/person-m-14.webp' %}" class="author-avatar"
+                                     alt="">
+                                <div class="author-details"><h4>Michael Anderson</h4><span
+                                        class="role">Project Manager</span><span class="company">InnovateTech Ltd</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="swiper-slide">
+                    <div class="testimonial-slide" data-aos="fade-up" data-aos-delay="400">
+                        <div class="testimonial-header">
+                            <div class="stars-rating">
+                                <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i
+                                    class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i
+                                    class="bi bi-star-fill"></i>
+                            </div>
+                            <div class="quote-icon"><i class="bi bi-quote"></i></div>
+                        </div>
+                        <div class="testimonial-body"><p>"Strategic collaboration and innovative thinking..."</p></div>
+                        <div class="testimonial-footer">
+                            <div class="author-info">
+                                <img src="{% static 'assets/img/person/person-f-11.webp' %}" class="author-avatar"
+                                     alt="">
+                                <div class="author-details"><h4>Jennifer Wilson</h4><span class="role">Digital Strategy Lead</span><span
+                                        class="company">FutureScope Inc</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="swiper-navigation-wrapper">
+                <div class="swiper-button-prev"></div>
+                <div class="swiper-pagination"></div>
+                <div class="swiper-button-next"></div>
+            </div>
+        </div>
+    </div>
+</section>

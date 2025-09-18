@@ -1,0 +1,91 @@
+{% load static %}
+<section id="services" class="services section">
+    <div class="container section-title">
+        <h2>Services</h2>
+        <p>Necessitatibus eius consequatur ex aliquid fuga eum quidem sint consectetur velit</p>
+    </div>
+    <div class="container" data-aos="fade-up" data-aos-delay="100">
+        <div class="row gy-4">
+            <div class="col-lg-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="service-card">
+                    <div class="service-icon"><i class="bi bi-building"></i></div>
+                    <h3>Commercial Construction</h3>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit...</p>
+                    <div class="service-features">
+                        <span><i class="bi bi-check-circle"></i> Office Buildings</span>
+                        <span><i class="bi bi-check-circle"></i> Retail Spaces</span>
+                        <span><i class="bi bi-check-circle"></i> Warehouses</span>
+                    </div>
+                    <a href="{% url 'service-details' %}" class="service-link">Learn More <i
+                            class="bi bi-arrow-right"></i></a>
+                </div>
+            </div>
+            <div class="col-lg-4" data-aos="fade-up" data-aos-delay="300">
+                <div class="service-card featured">
+                    <div class="service-badge">Most Requested</div>
+                    <div class="service-icon"><i class="bi bi-house"></i></div>
+                    <h3>Residential Construction</h3>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit...</p>
+                    <div class="service-features">
+                        <span><i class="bi bi-check-circle"></i> Custom Homes</span>
+                        <span><i class="bi bi-check-circle"></i> Renovations</span>
+                        <span><i class="bi bi-check-circle"></i> Additions</span>
+                    </div>
+                    <a href="{% url 'service-details' %}" class="service-link">Learn More <i
+                            class="bi bi-arrow-right"></i></a>
+                </div>
+            </div>
+            <div class="col-lg-4" data-aos="fade-up" data-aos-delay="400">
+                <div class="service-card">
+                    <div class="service-icon"><i class="bi bi-gear"></i></div>
+                    <h3>Industrial Construction</h3>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit...</p>
+                    <div class="service-features">
+                        <span><i class="bi bi-check-circle"></i> Manufacturing</span>
+                        <span><i class="bi bi-check-circle"></i> Processing Plants</span>
+                        <span><i class="bi bi-check-circle"></i> Storage Facilities</span>
+                    </div>
+                    <a href="{% url 'service-details' %}" class="service-link">Learn More <i
+                            class="bi bi-arrow-right"></i></a>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-5">
+            <div class="col-lg-6" data-aos="fade-up" data-aos-delay="100">
+                <div class="service-image-block">
+                    <img src="{% static 'assets/img/construction/project-1.webp' %}" class="img-fluid" alt="">
+                </div>
+            </div>
+            <div class="col-lg-6" data-aos="fade-up" data-aos-delay="200">
+                <div class="service-list-block">
+                    <h3>Additional Services</h3>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit...</p>
+                    <div class="service-list">
+                        <div class="service-list-item" data-aos="fade-up" data-aos-delay="100">
+                            <div class="service-list-icon"><i class="bi bi-rulers"></i></div>
+                            <div class="service-list-content"><h4>Architectural Design</h4>
+                                <p>...</p></div>
+                        </div>
+                        <div class="service-list-item" data-aos="fade-up" data-aos-delay="200">
+                            <div class="service-list-icon"><i class="bi bi-calendar-check"></i></div>
+                            <div class="service-list-content"><h4>Project Management</h4>
+                                <p>...</p></div>
+                        </div>
+                        <div class="service-list-item" data-aos="fade-up" data-aos-delay="300">
+                            <div class="service-list-icon"><i class="bi bi-tools"></i></div>
+                            <div class="service-list-content"><h4>Renovation &amp; Remodeling</h4>
+                                <p>...</p></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="cta-container text-center mt-5" data-aos="fade-up" data-aos-delay="300">
+            <h3>Ready to Start Your Construction Project?</h3>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla facilisi.</p>
+            <a href="#" class="btn btn-cta">Request a Free Quote</a>
+        </div>
+    </div>
+</section>

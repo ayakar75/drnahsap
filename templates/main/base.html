@@ -1,0 +1,25 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% include "main/includes/_head.html" %}
+    <title>{% block title %}Constructo{% endblock %}</title>
+</head>
+<body class="{% block body_class %}index-page{% endblock %}">
+
+{% include "main/includes/_header.html" %}
+
+<main class="main">
+    {% block content %}{% endblock %}
+</main>
+
+<!-- Scroll Top & Preloader -->
+<a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center">
+    <i class="bi bi-arrow-up-short"></i>
+</a>
+<div id="preloader"></div>
+
+{% include "main/includes/_footer.html" %}
+{% include "main/includes/_scripts.html" %}
+</body>
+</html>
