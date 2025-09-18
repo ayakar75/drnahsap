@@ -1,0 +1,14 @@
+{% extends 'main/base.html' %}
+{% load static %}
+{% block title %}Blog Details - UpConstruction{% endblock %}
+{% block body_class %}inner-page{% endblock %}
+
+{% block content %}
+    <section class="py-5">
+        <div class="container">
+            <h1 class="mb-3">Blog Başlığı</h1>
+            <img src="{% static 'assets/img/blog/blog-1.jpg' %}" class="img-fluid rounded mb-4" alt="">
+            <p>Detay içerik örneği…</p>
+        </div>
+    </section>
+{% endblock %}

@@ -1,14 +1,14 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-  {% include 'include/head.html' %}
-  <body class="{% block body_class %}index-page{% endblock %}">
-    {% include 'include/header.html' %}
-    <main class="main">
-      {% block content %}{% endblock %}
-    </main>
-    {% include 'include/footer.html' %}
-    {% include 'include/scripts.html' %}
-    {% block extra_js %}{% endblock %}
-  </body>
+{% include 'main/includes/head.html' %}
+<body class="{% block body_class %}index-page{% endblock %}">
+{% include 'main/includes/header.html' %}
+<main class="main">
+    {% block content %}{% endblock %}
+</main>
+{% include 'main/includes/footer.html' %}
+{% include 'main/includes/scripts.html' %}
+{% block extra_js %}{% endblock %}
+</body>
 </html>

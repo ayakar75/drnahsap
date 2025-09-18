@@ -1,0 +1,32 @@
+{% extends 'main/base.html' %}
+{% block title %}Contact - UpConstruction{% endblock %}
+{% block body_class %}inner-page{% endblock %}
+
+{% block content %}
+    <section class="py-5">
+        <div class="container">
+            <h1 class="mb-4">Contact</h1>
+            <div class="row gy-4">
+                <div class="col-lg-6">
+                    <p>Adres, telefon, e-posta bilgileri.</p>
+                </div>
+                <div class="col-lg-6">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="row gy-3">
+                            <div class="col-12"><input type="text" name="name" class="form-control" placeholder="Name"
+                                                       required></div>
+                            <div class="col-12"><input type="email" name="email" class="form-control"
+                                                       placeholder="Email" required></div>
+                            <div class="col-12"><textarea name="message" rows="6" class="form-control"
+                                                          placeholder="Message" required></textarea></div>
+                            <div class="col-12 text-end">
+                                <button class="btn btn-primary" type="submit">Send</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}
