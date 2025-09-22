@@ -17,7 +17,7 @@
 
             <div class="col-lg-5" data-aos="zoom-out" data-aos-delay="200">
                 {# İsteğe göre: aynı sayfaya post edilecekse action="" bırakabilirsin #}
-                <form action="{% url 'contact' %}" method="post" class="php-email-form">
+                <form action="{% url 'main:contact' %}" method="post" class="php-email-form">
                     {% csrf_token %}
                     <h3>Get a quote</h3>
                     <p>Vel nobis odio laboriosam et hic voluptatem. Inventore vitae totam. Rerum repellendus enim linead
