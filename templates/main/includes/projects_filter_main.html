@@ -1,0 +1,26 @@
+
+    <div class="container" data-aos="fade-up" data-aos-delay="100">
+        <ul class="portfolio-filters isotope-filters d-flex flex-wrap gap-2 justify-content-center">
+
+            {# "Tümü" filtresi #}
+            <li
+                    data-filter="*"
+                    class="{% if not selected_category %}filter-active{% endif %}">
+                Tümü
+            </li>
+
+            {# Kategoriler #}
+            {% for cat in categories %}
+                {# Isotope selector: .filter-<slug>  #}
+                <li
+                        data-filter=".filter-{{ cat.slug }}"
+                        class="{% if selected_category == cat.slug %}filter-active{% endif %}">
+                    {% if cat.icon_class %}<i class="{{ cat.icon_class }} me-1"></i>{% endif %}
+                    {{ cat.name|upper }}
+                </li>
+            {% empty %}
+                <li class="disabled opacity-50"><span>Kategori bulunamadı</span></li>
+            {% endfor %}
+
+        </ul>
+    </div>

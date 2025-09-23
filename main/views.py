@@ -10,6 +10,18 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 
 
+def projects_main(request):
+    qs, cat_slug = _filtered_projects(request)
+    paginator = Paginator(qs, 12)
+    page_obj = paginator.get_page(request.GET.get("page"))
+    return render(request, "main/projects.html", {
+        "projects": page_obj.object_list,
+        "page_obj": page_obj,
+        "categories": ProjectCategory.objects.order_by("order", "name"),
+        "selected_category": cat_slug,
+    })
+
+
 def about(request: HttpRequest) -> HttpResponse:
     # templates/main/about.html
     return render(request, "main/about.html")
@@ -64,21 +76,6 @@ def privacy(request: HttpRequest) -> HttpResponse:
     # templates/main/blog.html
     return render(request, "main/includes/privacy.html")
 
-
-from django.core.paginator import Paginator
-from django.shortcuts import render, get_object_or_404
-from .models import Project, ProjectCategory
-
-from django.shortcuts import render, get_object_or_404
-from .models import Project, ProjectCategory
-
-# main/views.py
-from django.shortcuts import render, get_object_or_404
-from .models import Project, ProjectCategory
-
-# main/views.py
-from django.shortcuts import render, get_object_or_404
-from .models import Project, ProjectCategory
 
 from django.shortcuts import render, get_object_or_404
 from .models import Project, ProjectCategory

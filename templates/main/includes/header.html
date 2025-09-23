@@ -15,9 +15,12 @@
                 </a></li>
                 <li><a href="about.html">Hakkımızda</a></li>
                 <li><a href="services.html">Hizmetlerimiz</a></li>
-                <li><a href="projects.html">Projelerimiz</a></li>
+                <li><a href="{% url 'main:projects_main' %}"
+                       class="{% if request.resolver_match.url_name == 'projects_name' %}active{% endif %}">
+                    Projelerimiz
+                </a></li>
                 <li><a href="blog.html">Blog</a></li>
-                <li class="dropdown"><a href="#"><span>Yaptığımız İşler</span> <i
+          <!--      <li class="dropdown"><a href="#"><span>Yaptığımız İşler</span> <i
                         class="bi bi-chevron-down toggle-dropdown"></i></a>
                     <ul>
                         <li><a href="#">Dropdown 1</a></li>
@@ -36,6 +39,7 @@
                         <li><a href="#">Dropdown 4</a></li>
                     </ul>
                 </li>
+            -->
                 <li><a href="contact.html">İletişim</a></li>
             </ul>
             <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
