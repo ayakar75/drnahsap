@@ -1,0 +1,31 @@
+{# project_details.html #}
+<h2>{{ project.title }}</h2>
+
+{# Kapak #}
+{% if project.effective_cover %}
+    <img class="img-fluid rounded mb-4" src="{{ project.effective_cover.url }}" alt="{{ project.title }}">
+{% endif %}
+
+{# Öncesi–Sonrası slider için eşleşen çiftler #}
+{% for before, after in project.before_after_pairs %}
+    <div class="ba-wrap my-4">
+        <img src="{{ before.image.url }}" alt="{{ before.alt_text|default:project.title }}">
+        <img class="after" src="{{ after.image.url }}" alt="{{ after.alt_text|default:project.title }}">
+    </div>
+{% empty %}
+    {# eşleşmiş çift yoksa normal galeri #}
+    <div class="row g-3">
+        {% for img in project.images.all %}
+            <div class="col-sm-6 col-md-4">
+                <a href="{{ img.image.url }}" class="glightbox" data-gallery="proj-{{ project.id }}">
+                    <img src="{{ img.image.url }}" class="img-fluid rounded"
+                         alt="{{ img.alt_text|default:project.title }}">
+                </a>
+                {% if img.title %}
+                    <div class="small text-muted mt-1">{{ img.title }}</div>{% endif %}
+            </div>
+        {% empty %}
+            <p>Henüz galeri görseli eklenmemiş.</p>
+        {% endfor %}
+    </div>
+{% endfor %}

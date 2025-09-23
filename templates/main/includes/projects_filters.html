@@ -1,0 +1,23 @@
+{# templates/main/includes/projects_filters.html #}
+{% load static %}
+
+{# show_filters verilmemişse True varsayalım; anasayfada False gönderiyoruz #}
+{% if show_filters|default:True %}
+    <ul class="portfolio-filters isotope-filters" data-aos="fade-up" data-aos-delay="100">
+
+        <li class="{% if not selected_category %}filter-active{% endif %}">
+            <a href="{% url 'main:projects' %}">Tümü</a>
+        </li>
+
+        {% if categories %}
+            {% for cat in categories %}
+                <li class="{% if selected_category == cat.slug %}filter-active{% endif %}">
+                    <a href="{% url 'main:projects' %}?category={{ cat.slug }}">{{ cat.name }}</a>
+                </li>
+            {% endfor %}
+        {% else %}
+            <li class="text-muted">Kategori yok</li>
+        {% endif %}
+
+    </ul>
+{% endif %}

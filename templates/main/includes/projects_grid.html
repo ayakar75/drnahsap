@@ -1,0 +1,68 @@
+{% load static %}
+
+<div class="isotope-layout" data-default-filter="*" data-layout="masonry" data-sort="original-order">
+
+    {# Kategori filtreleri (varsa) #}
+    {% if categories and show_filters|default:1 %}
+        <ul class="portfolio-filters isotope-filters" data-aos="fade-up" data-aos-delay="100">
+            <li data-filter="*" class="filter-active">Tümü</li>
+            {% for cat in categories %}
+                <li data-filter=".filter-{{ cat.slug }}">{{ cat.name }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    <div class="row gy-4 isotope-container" data-aos="fade-up" data-aos-delay="200">
+
+        {# Proje kartları #}
+        {% if projects %}
+            {% for project in projects %}
+                <div class="col-lg-4 col-md-6 portfolio-item isotope-item
+                    {% if project.category %} filter-{{ project.category.slug }}{% endif %}
+                    {% if project.categories and project.categories.exists %}
+                      {% for c in project.categories.all %} filter-{{ c.slug }}{% endfor %}
+                    {% endif %}">
+
+                    <div class="portfolio-content h-100">
+
+                        <img
+                                src="
+                                        {% if project.cover %}{{ project.cover.url }}{% else %}{% static 'assets/img/projects/remodeling-1.jpg' %}{% endif %}"
+                                class="img-fluid"
+                                alt="{{ project.title|default:'Proje' }}"
+                        >
+
+                        <div class="portfolio-info">
+                            <h4>{{ project.title|default:"Proje" }}</h4>
+                            {% if project.excerpt %}<p>{{ project.excerpt }}</p>{% endif %}
+
+                            {% if project.cover %}
+                                <a href="{{ project.cover.url }}"
+                                   title="{{ project.title|default:'Proje' }}"
+                                   data-gallery="portfolio-gallery"
+                                   class="glightbox preview-link">
+                                    <i class="bi bi-zoom-in"></i>
+                                </a>
+                            {% endif %}
+
+                            {% if project.slug %}
+                                <a href="{% url 'main:project_detail' slug=project.slug %}"
+                                   title="Detaylar"
+                                   class="details-link">
+                                    <i class="bi bi-link-45deg"></i>
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="alert alert-warning text-center my-4">
+                    Henüz proje kaydı yapılmamıştır.
+                </div>
+            </div>
+        {% endif %}
+
+    </div>
+</div>

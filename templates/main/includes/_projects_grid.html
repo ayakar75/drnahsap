@@ -1,0 +1,15 @@
+{# main/_projects_grid.html #}
+<div class="row gy-4">
+    {% for p in projects %}
+        <div class="col-lg-4 col-md-6">
+            <a href="{% url 'main:project_detail' slug=p.slug %}">
+                {% if p.cover %}
+                    <img src="{{ p.cover.url }}" alt="{{ p.title }}" class="img-fluid">
+                {% endif %}
+                <h5 class="mt-2">{{ p.title }}</h5>
+            </a>
+        </div>
+    {% empty %}
+        <div class="col-12"><em>Bu kategoride proje bulunamadı.</em></div>
+    {% endfor %}
+</div>

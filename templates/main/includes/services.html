@@ -1,95 +1,86 @@
 {% load static %}
-<!-- Services Section -->
 <section id="services" class="services section light-background">
 
-    <!-- Section Title -->
+    <!-- Bölüm Başlığı -->
     <div class="container section-title" data-aos="fade-up">
-        <h2>Services</h2>
-        <p>Necessitatibus eius consequatur ex aliquid fuga eum quidem sint consectetur velit</p>
-    </div><!-- End Section Title -->
+        <h2>Hizmetlerimiz</h2>
+        <p>Keşiften teslimata tek elden çözüm. DRN Ahşap Atölye, ölçüye özel tasarım ve kusursuz uygulamalarla yaşam
+            alanlarınıza değer katar.</p>
+    </div>
 
     <div class="container">
         <div class="row gy-4">
 
+            <!-- Tasarım & Projelendirme -->
             <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="100">
                 <div class="service-item position-relative">
-                    <div class="icon">
-                        <i class="fa-solid fa-mountain-city"></i>
-                    </div>
-                    <h3>Nesciunt Mete</h3>
-                    <p>Provident nihil minus qui consequatur non omnis maiores. Eos accusantium minus dolores iure
-                        perferendis tempore et consequatur.</p>
-                    <a href="{% url 'main:services' %}" class="readmore stretched-link">Read more <i
+                    <div class="icon"><i class="fa-solid fa-pen-ruler"></i></div>
+                    <h3>Tasarım &amp; Projelendirme</h3>
+                    <p>İhtiyaç analizi, yerinde ölçüm ve malzeme seçimi. 2D plan ve 3D modelle revizyonları hızlıca
+                        netleştiriyoruz.</p>
+                    <a href="{% url 'main:services' %}" class="readmore stretched-link">Detaylı inceleyin <i
                             class="bi bi-arrow-right"></i></a>
                 </div>
-            </div><!-- End Service Item -->
+            </div>
 
+            <!-- Atölye Üretimi -->
             <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="200">
                 <div class="service-item position-relative">
-                    <div class="icon">
-                        <i class="fa-solid fa-arrow-up-from-ground-water"></i>
-                    </div>
-                    <h3>Eosle Commodi</h3>
-                    <p>Ut autem aut autem non a. Sint sint sit facilis nam iusto sint. Libero corrupti neque eum hic non
-                        ut nesciunt dolorem.</p>
-                    <a href="{% url 'main:services' %}" class="readmore stretched-link">Read more <i
+                    <div class="icon"><i class="fa-solid fa-screwdriver-wrench"></i></div>
+                    <h3>Atölye Üretimi</h3>
+                    <p>CNC kesim, kenar bantlama, lake/boya ve masif işlemleri; her parça kalite kontrolden geçer.</p>
+                    <a href="{% url 'main:services' %}" class="readmore stretched-link">Detaylı inceleyin <i
                             class="bi bi-arrow-right"></i></a>
                 </div>
-            </div><!-- End Service Item -->
+            </div>
 
+            <!-- Uygulama & Montaj -->
             <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="300">
                 <div class="service-item position-relative">
-                    <div class="icon">
-                        <i class="fa-solid fa-compass-drafting"></i>
-                    </div>
-                    <h3>Ledo Markt</h3>
-                    <p>Ut excepturi voluptatem nisi sed. Quidem fuga consequatur. Minus ea aut. Vel qui id voluptas
-                        adipisci eos earum corrupti.</p>
-                    <a href="{% url 'main:services' %}" class="readmore stretched-link">Read more <i
+                    <div class="icon"><i class="fa-solid fa-helmet-safety"></i></div>
+                    <h3>Uygulama &amp; Montaj</h3>
+                    <p>Randevulu, temiz ve hızlı montaj. Şantiye koordinasyonu ve son kontrollerle anahtarı teslim
+                        ediyoruz.</p>
+                    <a href="{% url 'main:services' %}" class="readmore stretched-link">Detaylı inceleyin <i
                             class="bi bi-arrow-right"></i></a>
                 </div>
-            </div><!-- End Service Item -->
+            </div>
 
+            <!-- Tadilat & Yenileme -->
             <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="400">
                 <div class="service-item position-relative">
-                    <div class="icon">
-                        <i class="fa-solid fa-trowel-bricks"></i>
-                    </div>
-                    <h3>Asperiores Commodit</h3>
-                    <p>Non et temporibus minus omnis sed dolor esse consequatur. Cupiditate sed error ea fuga sit
-                        provident adipisci neque.</p>
-                    <a href="{% url 'main:services' %}" class="readmore stretched-link">Read more <i
+                    <div class="icon"><i class="fa-solid fa-hammer"></i></div>
+                    <h3>Tadilat &amp; Yenileme</h3>
+                    <p>Mutfak-banyo dönüşümü, kapak/çekmece modernizasyonu, tezgâh yenileme ve akıllı depolama
+                        çözümleri.</p>
+                    <a href="{% url 'main:services' %}" class="readmore stretched-link">Detaylı inceleyin <i
                             class="bi bi-arrow-right"></i></a>
                 </div>
-            </div><!-- End Service Item -->
+            </div>
 
+            <!-- Özel Mobilya & Ahşap Uygulamalar -->
             <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="500">
                 <div class="service-item position-relative">
-                    <div class="icon">
-                        <i class="fa-solid fa-helmet-safety"></i>
-                    </div>
-                    <h3>Velit Doloremque</h3>
-                    <p>Cumque et suscipit saepe. Est maiores autem enim facilis ut aut ipsam corporis aut. Sed animi at
-                        autem alias eius labore.</p>
-                    <a href="{% url 'main:services' %}" class="readmore stretched-link">Read more <i
+                    <div class="icon"><i class="fa-solid fa-couch"></i></div>
+                    <h3>Özel Mobilya &amp; Ahşap Uygulamalar</h3>
+                    <p>TV üniteleri, vestiyer, gardırop, çocuk odası; dış mekân bar/pergola ve dekoratif duvar
+                        panelleri.</p>
+                    <a href="{% url 'main:services' %}" class="readmore stretched-link">Detaylı inceleyin <i
                             class="bi bi-arrow-right"></i></a>
                 </div>
-            </div><!-- End Service Item -->
+            </div>
 
+            <!-- Bakım & Onarım -->
             <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="600">
                 <div class="service-item position-relative">
-                    <div class="icon">
-                        <i class="fa-solid fa-arrow-up-from-ground-water"></i>
-                    </div>
-                    <h3>Dolori Architecto</h3>
-                    <p>Hic molestias ea quibusdam eos. Fugiat enim doloremque aut neque non et debitis iure. Corrupti
-                        recusandae ducimus enim.</p>
-                    <a href="{% url 'main:services' %}" class="readmore stretched-link">Read more <i
+                    <div class="icon"><i class="fa-solid fa-toolbox"></i></div>
+                    <h3>Bakım &amp; Onarım</h3>
+                    <p>Menteşe-ray ayarı, yüzey yenileme, periyodik bakım paketleri ve garanti sonrası destek.</p>
+                    <a href="{% url 'main:contact' %}" class="readmore stretched-link">Keşif talep et <i
                             class="bi bi-arrow-right"></i></a>
                 </div>
-            </div><!-- End Service Item -->
+            </div>
 
         </div>
     </div>
-
-</section><!-- /Services Section -->
+</section>
