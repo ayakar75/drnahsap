@@ -1,0 +1,236 @@
+{% extends "main/base.html" %}
+{% load static %}
+
+{% block body_class %}services-page{% endblock %}
+
+{% block content %}
+    <!-- Page Title -->
+    <div class="page-title dark-background"
+         style="background-image: url({% static 'assets/img/services/atolye.png' %});">
+        <div class="container position-relative">
+            <h1>Hizmetlerimiz</h1>
+            <nav class="breadcrumbs">
+                <ol>
+                    <li><a href="{% url 'main:home' %}">Anasayfa</a></li>
+                    <li class="current">Hizmetlerimiz</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Giriş -->
+    <section class="section">
+        <div class="container">
+            <div class="row gy-4 align-items-center">
+                <div class="col-lg-6">
+                    <img src="{% static 'assets/img/services/wood-hero.jpg' %}" alt="Atölye"
+                         class="img-fluid rounded-4">
+                </div>
+                <div class="col-lg-6">
+                    <h2 class="mb-3">Özel Ölçü Ahşap Üretimi ve Usta İşçilik</h2>
+                    <p class="lead mb-3">
+                        Mutfak, banyo, gardırop, kapı ve pergola gibi tüm sabit mobilyalarda
+                        <strong>ölçüye özel tasarım</strong>, kaliteli malzeme ve titiz montaj ile hizmet veriyoruz.
+                    </p>
+                    <ul class="list-unstyled mb-0">
+                        <li><i class="bi bi-check-circle me-2"></i> Keşif & ölçü alma, 3D tasarım ve teklif</li>
+                        <li><i class="bi bi-check-circle me-2"></i> Üretim, vernik/lake uygulamaları, montaj</li>
+                        <li><i class="bi bi-check-circle me-2"></i> Garanti, tadilat ve periyodik bakım</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Alt Services -->
+    <section id="alt-services" class="alt-services section">
+        <div class="container">
+            <div class="row justify-content-around gy-4">
+                <div class="features-image col-lg-6">
+                    <img src="{% static 'assets/img/services/wood-bench.jpg' %}" alt="Atölye çalışma alanı">
+                </div>
+                <div class="col-lg-5 d-flex flex-column justify-content-center">
+                    <h3>Özel Üretim ve Ana Yetenekler</h3>
+                    <p>İhtiyaca göre proje tasarımı yapar, ölçüye uygun üretir ve yerinde montajını
+                        gerçekleştiririz.</p>
+
+                    <div class="icon-box d-flex position-relative">
+                        <i class="bi bi-rulers flex-shrink-0"></i>
+                        <div>
+                            <h4>Ölçü & Tasarım</h4>
+                            <p>Yerinde keşif, ölçülendirme, 3D/çizim desteği ve malzeme danışmanlığı.</p>
+                        </div>
+                    </div>
+
+                    <div class="icon-box d-flex position-relative">
+                        <i class="bi bi-tools flex-shrink-0"></i>
+                        <div>
+                            <h4>Üretim & Montaj</h4>
+                            <p>CNC kesim, kenar bantlama, gizli bağlantılar ve profesyonel montaj.</p>
+                        </div>
+                    </div>
+
+                    <div class="icon-box d-flex position-relative">
+                        <i class="bi bi-brush flex-shrink-0"></i>
+                        <div>
+                            <h4>Yüzey İşlemleri</h4>
+                            <p>Lake, vernik, yağ ve renklendirme seçenekleri; ipek mat / parlak.</p>
+                        </div>
+                    </div>
+
+                    <div class="icon-box d-flex position-relative">
+                        <i class="bi bi-shield-check flex-shrink-0"></i>
+                        <div>
+                            <h4>Garanti & Bakım</h4>
+                            <p>Montaj sonrası ayar, periyodik bakım ve hızlı tadilat çözümleri.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Hizmet Kartları -->
+    <section class="services section bg-light">
+        <div class="container">
+            <div class="section-header text-center">
+                <h2>Başlıca Ürün/Hizmet Grupları</h2>
+                <p>Ev ve iş yerleri için ölçüye özel üretim.</p>
+            </div>
+            <div class="row gy-4">
+                {% for card in service_cards %}
+                    <div class="col-md-6 col-xl-4">
+                        <div class="card h-100 shadow-sm border-0">
+                            <div class="card-body p-4">
+                                <div class="d-flex align-items-start">
+                                    <i class="bi {{ card.icon }} display-6 me-3"></i>
+                                    <div>
+                                        <h5 class="card-title mb-2">{{ card.title }}</h5>
+                                        <p class="card-text mb-0">Ölçüye özel tasarım, kaliteli donanım ve temiz
+                                            işçilik.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer bg-white border-0 pt-0 px-4 pb-4">
+                                <a href="{% url 'main:projects' %}" class="btn btn-primary btn-sm">Örnek Çalışmalar</a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <!-- Malzemeler -->
+    <section class="section">
+        <div class="container">
+            <div class="section-header text-center">
+                <h2>Malzeme ve Yüzey Seçenekleri</h2>
+            </div>
+            <div class="row gy-4">
+                <div class="col-lg-6">
+                    <div class="p-4 border rounded-3 h-100">
+                        <h5>Gövde / Kapak Malzemeleri</h5>
+                        <ul>
+                            <li>MDF / MDFLam, Suntalam, Kontrplak</li>
+                            <li>Masif panel (meşe, çam vb.), kaplama</li>
+                            <li>Nem dayanımlı seçenekler (banyo/mutfak)</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="p-4 border rounded-3 h-100">
+                        <h5>Yüzey İşlemleri</h5>
+                        <ul>
+                            <li>Lake (mat/yarı mat/parlak), ipek mat vernik</li>
+                            <li>Doğal yağ, renklendirme, eskitme efektleri</li>
+                            <li>Kenar bant: PVC/ABS, gizli/soft detaylar</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Süreç -->
+    <section class="section bg-light">
+        <div class="container">
+            <div class="section-header text-center">
+                <h2>Çalışma Sürecimiz</h2>
+            </div>
+            <div class="row gy-4">
+                {% for step in process_steps %}
+                    <div class="col-12 col-md-6 col-xl-4">
+                        <div class="d-flex p-4 bg-white h-100 shadow-sm rounded-3">
+                            <div class="badge bg-primary me-3">{{ forloop.counter }}</div>
+                            <div>
+                                <h5>{{ step }}</h5>
+                                <p>Her aşamada şeffaf bilgilendirme ve zaman planı paylaşılır.</p>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <!-- Portföy -->
+    <section class="section">
+        <div class="container">
+            <div class="section-header text-center">
+                <h2>Örnek Çalışmalar</h2>
+            </div>
+            <div class="row gy-4">
+                {% for i in portfolio_images %}
+                    <div class="col-6 col-lg-4">
+                        <a href="{% url 'main:projects' %}">
+                            <img src="{% static 'assets/img/portfolio/wood-' %}{{ i }}.jpg"
+                                 class="img-fluid rounded-3" alt="Portföy {{ i }}">
+                        </a>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <!-- SSS -->
+    <section class="section bg-light">
+        <div class="container">
+            <div class="section-header text-center">
+                <h2>Sık Sorulan Sorular</h2>
+            </div>
+            <div class="accordion" id="faq">
+                {% for qa in faqs %}
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}"
+                                    type="button" data-bs-toggle="collapse" data-bs-target="#faq-{{ forloop.counter }}">
+                                {{ qa.q }}
+                            </button>
+                        </h2>
+                        <div id="faq-{{ forloop.counter }}"
+                             class="accordion-collapse collapse {% if forloop.first %}show{% endif %}"
+                             data-bs-parent="#faq">
+                            <div class="accordion-body">{{ qa.a }}</div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="call-to-action section">
+        <div class="container">
+            <div class="row align-items-center gy-3">
+                <div class="col-lg-8">
+                    <h3>Projenizi konuşalım</h3>
+                    <p class="mb-0">Ölçü, tasarım ve malzeme seçiminde ücretsiz danışmanlık için bize ulaşın.</p>
+                </div>
+                <div class="col-lg-4 text-lg-end">
+                    <a href="{% url 'main:contact' %}" class="btn btn-primary btn-lg">Teklif Al</a>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}

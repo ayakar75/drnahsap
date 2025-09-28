@@ -28,8 +28,54 @@ def about(request: HttpRequest) -> HttpResponse:
 
 
 def services(request: HttpRequest) -> HttpResponse:
-    # templates/main/services.html
-    return render(request, "main/services.html")
+    service_cards = [
+        {"title": "Mutfak Dolabı", "icon": "bi-house"},
+        {"title": "Banyo Dolabı", "icon": "bi-droplet"},
+        {"title": "Gardırop & Ray Dolap", "icon": "bi-collection"},
+        {"title": "TV Ünitesi", "icon": "bi-tv"},
+        {"title": "Kapı & Pencere Doğrama", "icon": "bi-door-closed"},
+        {"title": "Pergola & Veranda", "icon": "bi-tree"},
+        {"title": "Ahşap Bahçe Mobilyası", "icon": "bi-flower1"},
+        {"title": "Ofis Mobilyası", "icon": "bi-briefcase"},
+        {"title": "Merdiven & Korkuluk", "icon": "bi-ladder"},
+        {"title": "CNC/Lazer Kesim", "icon": "bi-cpu"},
+        {"title": "Tadilat & Restorasyon", "icon": "bi-recycle"},
+        {"title": "Özel Tasarım Projeler", "icon": "bi-stars"},
+    ]
+
+    process_steps = [
+        "Keşif & Ölçü Alma",
+        "Tasarım & 3D Görselleştirme",
+        "Malzeme Seçimi & Teklif",
+        "Üretim",
+        "Boya/Vernik",
+        "Montaj & Teslimat",
+        "Garanti & Bakım",
+    ]
+
+    faqs = [
+        {"q": "Teslim süresi nedir?",
+         "a": "Proje kapsamına göre 10–30 iş günü arasında değişir."},
+        {"q": "Keşif/ölçü alma ücretli mi?",
+         "a": "Merkez bölge için ücretsiz; uzak lokasyonlarda yol ücreti talep edilebilir."},
+        {"q": "Garanti var mı?",
+         "a": "Montaj ve işçilik için 2 yıl; donanım için üretici garantisi geçerlidir."},
+        {"q": "Ödeme planı nasıl?",
+         "a": "%40 kapora (üretim başlangıcı), kalan tutar montaj sonrası teslimde."},
+        {"q": "Küçük tadilat yapıyor musunuz?",
+         "a": "Evet; kapak ayarı, menteşe değişimi, lake rötuş gibi işler için randevu oluşturuyoruz."},
+        {"q": "Malzeme seçimine nasıl karar veriyoruz?",
+         "a": "Kullanım alanı (mutfak/banyo), bütçe ve beklentiye göre birlikte karar veriyoruz."},
+    ]
+
+    portfolio_images = [1, 2, 3, 4, 5, 6]
+
+    return render(request, "main/services.html", {
+        "service_cards": service_cards,
+        "process_steps": process_steps,
+        "faqs": faqs,
+        "portfolio_images": portfolio_images,
+    })
 
 
 def blog(request: HttpRequest) -> HttpResponse:
@@ -87,17 +133,6 @@ def _filtered_projects(request):
     if cat_slug:
         qs = qs.filter(categories__slug=cat_slug).distinct()
     return qs, cat_slug
-
-
-def projects(request):
-    qs, cat_slug = _filtered_projects(request)
-    categories = ProjectCategory.objects.order_by("order", "name")
-    return render(request, "main/includes/projects.html", {
-        "projects": qs,
-        "categories": categories,
-        "selected_category": cat_slug,
-        "show_filters": True,
-    })
 
 
 def projects_partial(request):

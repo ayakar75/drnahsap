@@ -6,17 +6,17 @@ app_name = "main"
 urlpatterns = [
     path("", views.home, name="home"),
 
-    # Liste sayfası
-    path("projects/", views.projects, name="projects"),
+    # Tam sayfa liste
+    path("projects/", views.projects_main, name="projects"),
 
-    # Özel yollar: SLUG’dan önce gelmeli!
+    # Parça/AJAX uçları (liste grid’i vs.)
     path("projects/partial/", views.projects_partial, name="projects_partial"),
-    path("projects/grid/", views.projects_grid, name="projects_grid"),  # varsa kullan
+    path("projects/grid/", views.projects_grid, name="projects_grid"),
 
-    # Detay: en sonda, SLUG ile
+    # Detay — slug en sonda
     path("projects/<slug:slug>/", views.project_detail, name="project_detail"),
 
-    # Diğerleri
+    # Diğer sayfalar
     path("about/", views.about, name="about"),
     path("services/", views.services, name="services"),
     path("blog/", views.blog, name="blog"),
@@ -24,5 +24,4 @@ urlpatterns = [
     path("contact/", views.contact, name="contact"),
     path("terms/", views.terms, name="terms"),
     path("privacy/", views.privacy, name="privacy"),
-    path("projects-main/", views.projects_main, name="projects_main"),
 ]

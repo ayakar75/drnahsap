@@ -1,0 +1,46 @@
+{% extends "main/base.html" %}
+{% load static %}
+
+{% block body_class %}about-page{% endblock %}
+
+{% block content %}
+    <!-- Sayfa başlığı -->
+    <div class="page-title dark-background"
+         style="background-image: url({% static 'assets/img/page-title-bg.jpg' %});">
+        <div class="container position-relative">
+            <h1>Hakkımızda</h1>
+            <nav class="breadcrumbs">
+                <ol>
+                    <li><a href="{% url 'main:home' %}">Anasayfa</a></li>
+                    <li class="current">Hakkımızda</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <!-- İçerik bölümü -->
+    <section class="about section">
+        <div class="container">
+            <div class="row gy-4">
+                <div class="col-lg-6">
+                    <img src="{% static 'assets/img/about.jpg' %}" class="img-fluid rounded-4" alt="">
+                </div>
+                <div class="col-lg-6 content">
+                    <h3>Biz Kimiz?</h3>
+                    <p class="fst-italic">
+                        Buraya firmanızın veya projenizin kısa bir özetini yazabilirsiniz.
+                    </p>
+                    <ul>
+                        <li><i class="bi bi-check-circle"></i> Deneyimli bir ekip.</li>
+                        <li><i class="bi bi-check-circle"></i> Müşteri odaklı yaklaşım.</li>
+                        <li><i class="bi bi-check-circle"></i> Sürdürülebilir çözümler.</li>
+                    </ul>
+                    <p>
+                        Burada detaylı vizyon/misyon metinlerini ekleyebilirsiniz. Dilerseniz
+                        bu kısmı `includes/about_content.html` şeklinde parçaya da ayırabilirsiniz.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}
