@@ -33,7 +33,7 @@ def services(request: HttpRequest) -> HttpResponse:
         {"title": "Banyo Dolabı", "icon": "bi-droplet"},
         {"title": "Gardırop & Ray Dolap", "icon": "bi-collection"},
         {"title": "TV Ünitesi", "icon": "bi-tv"},
-        {"title": "Kapı & Pencere Doğrama", "icon": "bi-door-closed"},
+        {"title": "Kapı Doğrama", "icon": "bi-door-closed"},
         {"title": "Pergola & Veranda", "icon": "bi-tree"},
         {"title": "Ahşap Bahçe Mobilyası", "icon": "bi-flower1"},
         {"title": "Ofis Mobilyası", "icon": "bi-briefcase"},

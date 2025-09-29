@@ -1,0 +1,104 @@
+{% extends "main/base.html" %}
+{% load static %}
+
+{% block body_class %}contact-page{% endblock %}
+
+{% block content %}
+    <!-- Page Title -->
+    <div class="page-title dark-background"
+         style="background-image: url({% static 'assets/img/services/atolye.png' %});">
+        <div class="container position-relative">
+            <h1>İletişim</h1>
+            <nav class="breadcrumbs">
+                <ol>
+                    <li><a href="{% url 'main:home' %}">Anasayfa</a></li>
+                    <li class="current">İletişim</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact section">
+        <div class="container">
+
+            <div class="row gy-4">
+                <!-- Address -->
+                <div class="col-lg-6">
+                    <div class="info-item d-flex flex-column justify-content-center align-items-center">
+                        <i class="bi bi-geo-alt"></i>
+                        <h3>Adres</h3>
+                        <p>Zümrütevler Mahallesi
+                            Canay Sokak | No:12
+                            Maltepe/İSTANBUL</p>
+                    </div>
+                </div>
+
+                <!-- Phone -->
+                <div class="col-lg-3 col-md-6">
+                    <div class="info-item d-flex flex-column justify-content-center align-items-center">
+                        <i class="bi bi-telephone"></i>
+                        <h3>Telefon</h3>
+                        <p>+90 (532) 372 23 56</p>
+                    </div>
+                </div>
+
+                <!-- Mail -->
+                <div class="col-lg-3 col-md-6">
+                    <div class="info-item d-flex flex-column justify-content-center align-items-center">
+                        <i class="bi bi-envelope"></i>
+                        <h3>E-posta</h3>
+                        <p>omuryatkin@hotmail.com</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row gy-4 mt-1">
+                <!-- Map -->
+                <div class="col-lg-6">
+                    <iframe
+                            src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d48389.78314118045!2d-74.006138!3d40.710059!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c25a22a3bda30d%3A0xb89d1fe6bc499443!2sDowntown%20Conference%20Center!5e0!3m2!1str!2str!4v1676961268712!5m2!1str!2str"
+                            style="border:0; width:100%; height:400px;"
+                            allowfullscreen="" loading="lazy"
+                            referrerpolicy="no-referrer-when-downgrade"></iframe>
+                </div>
+
+                <!-- Form -->
+                <div class="col-lg-6">
+                    <form action="{% url 'main:contact' %}" method="post" class="php-email-form">
+                        {% csrf_token %}
+                        <div class="row gy-4">
+                            <div class="col-md-6">
+                                <input type="text" name="name" class="form-control" placeholder="Ad Soyad" required>
+                            </div>
+                            <div class="col-md-6">
+                                <input type="email" name="email" class="form-control" placeholder="E-posta" required>
+                            </div>
+                            <div class="col-md-12">
+                                <input type="text" name="subject" class="form-control" placeholder="Konu" required>
+                            </div>
+                            <div class="col-md-12">
+                                <textarea name="message" rows="6" class="form-control" placeholder="Mesajınız"
+                                          required></textarea>
+                            </div>
+
+                            <!-- İsteğe bağlı: gönderim durum mesajları -->
+                            {% if messages %}
+                                <div class="col-md-12">
+                                    {% for m in messages %}
+                                        <div class="alert alert-{{ m.tags }}">{{ m }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+
+                            <div class="col-md-12 text-center">
+                                <button type="submit">Gönder</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </section>
+{% endblock %}

@@ -5,79 +5,82 @@
 
 {% block content %}
 
-  {# Sayfa başlığı / breadcrumb #}
-  <div class="page-title dark-background"
-       style="background-image: url({{ STATIC_URL }}assets/img/page-title-bg.jpg);">
-    <div class="container position-relative">
-      <h1>Projelerimiz</h1>
-      <nav class="breadcrumbs">
-        <ol>
-          <li><a href="{% url 'main:home' %}">Anasayfa</a></li>
-          <li class="current">Projelerimiz</li>
-        </ol>
-      </nav>
-    </div>
-  </div>
-
-  {# Projects Section #}
-  <section id="projects" class="projects section">
-    <div class="container">
-
-      <div class="isotope-layout" data-default-filter="*" data-layout="masonry" data-sort="original-order">
-
-        {# Kategori filtreleri — include #}
-        {# expects: categories, selected_category #}
-        {% include "main/includes/projects_filter_main.html" with categories=categories selected_category=selected_category only %}
-
-        {# Grid — include #}
-        <div class="row gy-4 isotope-container" data-aos="fade-up" data-aos-delay="200">
-          {# expects: projects (liste) #}
-          {% include "main/includes/projects_grid.html" with projects=projects only %}
+    {# Sayfa başlığı / breadcrumb #}
+    <div class="page-title dark-background"
+         style="background-image: url({% static 'assets/img/services/atolye.png' %});">
+        <div class="container position-relative">
+            <h1>Projelerimiz</h1>
+            <nav class="breadcrumbs">
+                <ol>
+                    <li><a href="{% url 'main:home' %}">Anasayfa</a></li>
+                    <li class="current">Projelerimiz</li>
+                </ol>
+            </nav>
         </div>
-
-      </div>
-
-      {# Sayfalama (varsa) #}
-      {% if page_obj %}
-        <nav aria-label="Projeler sayfalama" class="mt-4">
-          <ul class="pagination justify-content-center">
-
-            {% if page_obj.has_previous %}
-              <li class="page-item">
-                <a class="page-link"
-                   href="?page={{ page_obj.previous_page_number }}{% if selected_category %}&category={{ selected_category }}{% endif %}"
-                   aria-label="Önceki"><span aria-hidden="true">&laquo;</span></a>
-              </li>
-            {% else %}
-              <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
-            {% endif %}
-
-            {% for num in page_obj.paginator.page_range %}
-              {% if num == page_obj.number %}
-                <li class="page-item active"><span class="page-link">{{ num }}</span></li>
-              {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                <li class="page-item">
-                  <a class="page-link"
-                     href="?page={{ num }}{% if selected_category %}&category={{ selected_category }}{% endif %}">{{ num }}</a>
-                </li>
-              {% endif %}
-            {% endfor %}
-
-            {% if page_obj.has_next %}
-              <li class="page-item">
-                <a class="page-link"
-                   href="?page={{ page_obj.next_page_number }}{% if selected_category %}&category={{ selected_category }}{% endif %}"
-                   aria-label="Sonraki"><span aria-hidden="true">&raquo;</span></a>
-              </li>
-            {% else %}
-              <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
-            {% endif %}
-
-          </ul>
-        </nav>
-      {% endif %}
-
     </div>
-  </section>
+
+    {# Projects Section #}
+    <section id="projects" class="projects section">
+        <div class="container">
+
+            <div class="isotope-layout" data-default-filter="*" data-layout="masonry" data-sort="original-order">
+
+                {# Kategori filtreleri — include #}
+                {# expects: categories, selected_category #}
+                {% include "main/includes/projects_filter_main.html" with categories=categories selected_category=selected_category only %}
+
+                {# Grid — include #}
+                <div class="row gy-4 isotope-container" data-aos="fade-up" data-aos-delay="200">
+                    {# expects: projects (liste) #}
+                    {% include "main/includes/projects_grid.html" with projects=projects only %}
+                </div>
+
+            </div>
+
+            {# Sayfalama (varsa) #}
+            {% if page_obj %}
+                <nav aria-label="Projeler sayfalama" class="mt-4">
+                    <ul class="pagination justify-content-center">
+
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link"
+                                   href="?page=
+                                           {{ page_obj.previous_page_number }}{% if selected_category %}&category={{ selected_category }}{% endif %}"
+                                   aria-label="Önceki"><span aria-hidden="true">&laquo;</span></a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
+                        {% endif %}
+
+                        {% for num in page_obj.paginator.page_range %}
+                            {% if num == page_obj.number %}
+                                <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                <li class="page-item">
+                                    <a class="page-link"
+                                       href="?page=
+                                               {{ num }}{% if selected_category %}&category={{ selected_category }}{% endif %}">{{ num }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link"
+                                   href="?page=
+                                           {{ page_obj.next_page_number }}{% if selected_category %}&category={{ selected_category }}{% endif %}"
+                                   aria-label="Sonraki"><span aria-hidden="true">&raquo;</span></a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
+                        {% endif %}
+
+                    </ul>
+                </nav>
+            {% endif %}
+
+        </div>
+    </section>
 
 {% endblock %}
