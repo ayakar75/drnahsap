@@ -4,6 +4,7 @@
 {% block body_class %}messages-page{% endblock %}
 
 {% block content %}
+    <!-- Üst başlık/breadcrumbs -->
     <div class="page-title dark-background"
          style="background-image: url({% static 'assets/img/services/atolye.png' %});">
         <div class="container position-relative">
@@ -68,89 +69,42 @@
                         <th>Mesaj</th>
                         <th>Tarih</th>
                         <th>Durum</th>
-                        <th style="width:220px">İşlem</th>
+                        <th style="width:240px">İşlem</th>
                     </tr>
                     </thead>
                     <tbody>
                     {% for m in page_obj.object_list %}
-                        {# modal için benzersiz id #}
-                        {% with mid="msgmodal-"|add:m.id|stringformat:"s" %}
-                            <tr>
-                                <td>{{ m.name }}</td>
-                                <td>{{ m.email }}</td>
-                                <td>{{ m.subject|default:"(Yok)" }}</td>
-                                <td title="{{ m.message }}">{{ m.message|truncatechars:60 }}</td>
-                                <td>{{ m.created_at|date:"d.m.Y H:i" }}</td>
-                                <td>
-                                    {% if m.is_read %}
-                                        <span class="badge bg-success">Okundu</span>
-                                    {% else %}
-                                        <span class="badge bg-danger">Okunmadı</span>
-                                    {% endif %}
-                                </td>
-                                <td class="d-flex flex-wrap gap-2">
-                                    <button type="button" class="btn btn-sm btn-info text-white"
-                                            data-bs-toggle="modal" data-bs-target="#{{ mid }}">
-                                        Detay
-                                    </button>
-                                    {% if not m.is_read %}
-                                        <a class="btn btn-sm btn-outline-success"
-                                           href="?status={{ status }}&q={{ q }}&okundu={{ m.id }}">Okundu</a>
-                                    {% else %}
-                                        <a class="btn btn-sm btn-outline-secondary"
-                                           href="?status={{ status }}&q={{ q }}&okunmadi={{ m.id }}">Okunmadı</a>
-                                    {% endif %}
-                                </td>
-                            </tr>
+                        <tr>
+                            <td>{{ m.name }}</td>
+                            <td>{{ m.email }}</td>
+                            <td>{{ m.subject|default:"(Yok)" }}</td>
+                            <td title="{{ m.message }}">{{ m.message|truncatechars:60 }}</td>
+                            <td>{{ m.created_at|date:"d.m.Y H:i" }}</td>
+                            <td>
+                                {% if m.is_read %}
+                                    <span class="badge bg-success">Okundu</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Okunmadı</span>
+                                {% endif %}
+                            </td>
+                            <td class="d-flex flex-wrap gap-2">
+                                <!-- Detay MODAL butonu -->
+                                <button type="button"
+                                        class="btn btn-sm btn-info text-white"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#msg-{{ m.id }}">
+                                    Detay
+                                </button>
 
-                            <!-- Mesaj Detay Modal -->
-                            <div class="modal fade" id="{{ mid }}" tabindex="-1" aria-hidden="true">
-                                <div class="modal-dialog modal-lg modal-dialog-scrollable">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title">
-                                                Mesaj Detayı — {{ m.name }} {% if m.subject %} |
-                                                {{ m.subject }}{% endif %}
-                                            </h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                    aria-label="Kapat"></button>
-                                        </div>
-                                        <div class="modal-body">
-                                            <dl class="row">
-                                                <dt class="col-sm-3">Ad</dt>
-                                                <dd class="col-sm-9">{{ m.name }}</dd>
-                                                <dt class="col-sm-3">E-posta</dt>
-                                                <dd class="col-sm-9">{{ m.email }}</dd>
-                                                {% if m.phone %}
-                                                    <dt class="col-sm-3">Telefon</dt>
-                                                    <dd class="col-sm-9">{{ m.phone }}</dd>
-                                                {% endif %}
-                                                <dt class="col-sm-3">Konu</dt>
-                                                <dd class="col-sm-9">{{ m.subject|default:"(Yok)" }}</dd>
-                                                <dt class="col-sm-3">Tarih</dt>
-                                                <dd class="col-sm-9">{{ m.created_at|date:"d.m.Y H:i" }}</dd>
-                                            </dl>
-                                            <hr>
-                                            <p class="mb-0" style="white-space:pre-wrap">{{ m.message }}</p>
-                                        </div>
-                                        <div class="modal-footer">
-                                            {% if not m.is_read %}
-                                                <a class="btn btn-success"
-                                                   href="?status={{ status }}&q={{ q }}&okundu={{ m.id }}">Okundu
-                                                    İşaretle</a>
-                                            {% else %}
-                                                <a class="btn btn-outline-secondary"
-                                                   href="?status={{ status }}&q={{ q }}&okunmadi={{ m.id }}">Okunmadı
-                                                    Yap</a>
-                                            {% endif %}
-                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                                                Kapat
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        {% endwith %}
+                                {% if not m.is_read %}
+                                    <a class="btn btn-sm btn-outline-success"
+                                       href="?status={{ status }}&q={{ q }}&okundu={{ m.id }}">Okundu</a>
+                                {% else %}
+                                    <a class="btn btn-sm btn-outline-secondary"
+                                       href="?status={{ status }}&q={{ q }}&okunmadi={{ m.id }}">Okunmadı</a>
+                                {% endif %}
+                            </td>
+                        </tr>
                     {% empty %}
                         <tr>
                             <td colspan="7" class="text-center">Kayıt bulunamadı.</td>
@@ -192,7 +146,52 @@
             <div class="mt-3">
                 <a href="{% url 'backoffice:manager_dashboard' %}" class="btn btn-secondary">← Yönetim Paneline Dön</a>
             </div>
-
         </div>
     </section>
+
+    {# ========= MODAL’LAR: TABLONUN DIŞINDA RENDER EDİLİR ========= #}
+    {% for m in page_obj.object_list %}
+        <div class="modal fade" id="msg-{{ m.id }}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            Mesaj Detayı — {{ m.name }}{% if m.subject %} | {{ m.subject }}{% endif %}
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+                    </div>
+                    <div class="modal-body">
+                        <dl class="row">
+                            <dt class="col-sm-3">Ad</dt>
+                            <dd class="col-sm-9">{{ m.name }}</dd>
+                            <dt class="col-sm-3">E-posta</dt>
+                            <dd class="col-sm-9">{{ m.email }}</dd>
+                            {% if m.phone %}
+                                <dt class="col-sm-3">Telefon</dt>
+                                <dd class="col-sm-9">{{ m.phone }}</dd>
+                            {% endif %}
+                            <dt class="col-sm-3">Konu</dt>
+                            <dd class="col-sm-9">{{ m.subject|default:"(Yok)" }}</dd>
+                            <dt class="col-sm-3">Tarih</dt>
+                            <dd class="col-sm-9">{{ m.created_at|date:"d.m.Y H:i" }}</dd>
+                        </dl>
+                        <hr>
+                        <div style="white-space:pre-wrap">{{ m.message }}</div>
+                    </div>
+                    <div class="modal-footer">
+                        {% if not m.is_read %}
+                            <a class="btn btn-success"
+                               href="?status={{ status }}&q={{ q }}&okundu={{ m.id }}">Okundu İşaretle</a>
+                        {% else %}
+                            <a class="btn btn-outline-secondary"
+                               href="?status={{ status }}&q={{ q }}&okunmadi={{ m.id }}">Okunmadı Yap</a>
+                        {% endif %}
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    {% endfor %}
+
 {% endblock %}

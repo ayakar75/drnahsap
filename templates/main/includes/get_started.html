@@ -32,11 +32,15 @@
                         <div class="col-12">
                             <input type="text" class="form-control" name="phone" placeholder="Telefon" required>
                         </div>
+                        <!-- EKLENDİ: Konu -->
+                        <div class="col-12">
+                            <input type="text" class="form-control" name="subject"
+                                   placeholder="Konu (örn. Mutfak Dolabı, Gardırop)">
+                        </div>
                         <div class="col-12">
                              <textarea class="form-control" name="message" rows="6"
                                        placeholder="Mesajınız (ölçüler, tarz, teslim tarihi, bütçe aralığı…)"
-                                       required>
-                             </textarea>
+                                       required></textarea>
                         </div>
 
                         <div class="col-12 text-center">
@@ -45,11 +49,10 @@
                             <div class="sent-message" style="display:none;">Talebiniz başarıyla gönderildi. Teşekkür
                                 ederiz!
                             </div>
-                            <button type="submit" class="btn btn-warning"
+                            <button id="gsSubmit" type="submit" class="btn btn-warning"
                                     style="background-color:#f9a825; border:none; color:#fff;">
                                 Teklif Al
                             </button>
-
                         </div>
                     </div>
                 </form>
