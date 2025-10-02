@@ -1,13 +1,10 @@
 from django.core.paginator import Paginator
-from django.shortcuts import render, redirect, get_object_or_404
+from django.http import JsonResponse
 from django.views.decorators.http import require_POST
-from django.contrib import messages
-
-from django.shortcuts import render
-from .models import Project, ProjectCategory
-from django.views.generic import ListView, DetailView
+from django.views.decorators.csrf import csrf_exempt, csrf_protect
+from .models import ContactMessage
 from django.http import HttpRequest, HttpResponse
-from django.shortcuts import render
+
 
 
 def projects_main(request):
@@ -167,3 +164,25 @@ def projects_grid(request):
     return render(request, "main/includes/projects_grid.html", {
         "projects": qs[:12],  # grid için sınırlı liste
     })
+
+
+@require_POST
+@csrf_protect
+def contact_message_api(request):
+    name    = request.POST.get("name", "").strip()
+    email   = request.POST.get("email", "").strip()
+    phone   = request.POST.get("phone", "").strip()
+    subject = request.POST.get("subject", "").strip()
+    message = request.POST.get("message", "").strip()
+
+    errors = {}
+    if not name:  errors["name"] = "Ad gerekli."
+    if not email: errors["email"] = "E-posta gerekli."
+    if not message: errors["message"] = "Mesaj gerekli."
+    if errors:
+        return JsonResponse({"ok": False, "errors": errors}, status=400)
+
+    ContactMessage.objects.create(
+        name=name, email=email, phone=phone, subject=subject, message=message
+    )
+    return JsonResponse({"ok": True})

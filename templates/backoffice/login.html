@@ -1,0 +1,58 @@
+{% extends "main/base.html" %}
+{% load static %}
+
+{% block body_class %}login-page{% endblock %}
+
+{% block content %}
+    <!-- Page Title -->
+    <div class="page-title dark-background"
+         style="background-image: url({% static 'assets/img/services/atolye.png' %});">
+        <div class="container position-relative">
+            <h1>Yönetici Girişi</h1>
+            <nav class="breadcrumbs">
+                <ol>
+                    <li><a href="{% url 'main:home' %}">Anasayfa</a></li>
+                    <li class="current">Yönetici Girişi</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Login Form -->
+    <section id="login" class="contact section">
+        <div class="container" data-aos="fade">
+            <div class="row gy-4 justify-content-center">
+                <div class="col-lg-6">
+
+                    {% if messages %}
+                        {% for m in messages %}
+                            <div class="alert alert-danger">{{ m }}</div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <!-- NOT: php-email-form sınıfı yok; validate.js devre dışı -->
+                    <form method="post" class="p-4 shadow-sm bg-white rounded-3" novalidate>
+                        {% csrf_token %}
+                        <div class="row gy-3">
+                            <div class="col-12">
+                                <input type="email" name="email" class="form-control form-control-lg"
+                                       placeholder="E-posta" required>
+                            </div>
+                            <div class="col-12">
+                                <input type="password" name="password" class="form-control form-control-lg"
+                                       placeholder="Şifre" required>
+                            </div>
+                            <div class="col-12 text-center pt-2">
+                                <button type="submit"
+                                        class="btn btn-warning rounded-pill px-5 py-2 fw-semibold">
+                                    Giriş Yap
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}

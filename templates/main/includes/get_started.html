@@ -15,9 +15,13 @@
             </div>
 
             <div class="col-lg-5" data-aos="zoom-out" data-aos-delay="200">
-                <form action="#" method="post" class="php-email-form">
+                <!-- SADECE class değişti (php-email-form kaldırıldı) -->
+                <form id="getStartedForm" action="{% url 'main:contact_message_api' %}" method="post"
+                      class="gs-email-form">
+                    {% csrf_token %}
                     <h3>Teklif Formu</h3>
                     <p>DRN Ahşap Atölye ekibi en kısa sürede sizinle iletişime geçecektir.</p>
+
                     <div class="row gy-3">
                         <div class="col-12">
                             <input type="text" name="name" class="form-control" placeholder="Ad Soyad" required>
@@ -29,15 +33,23 @@
                             <input type="text" class="form-control" name="phone" placeholder="Telefon" required>
                         </div>
                         <div class="col-12">
-                            <textarea class="form-control" name="message" rows="6"
-                                      placeholder="Mesajınız (ölçüler, tarz, teslim tarihi, bütçe aralığı…)"
-                                      required></textarea>
+                             <textarea class="form-control" name="message" rows="6"
+                                       placeholder="Mesajınız (ölçüler, tarz, teslim tarihi, bütçe aralığı…)"
+                                       required>
+                             </textarea>
                         </div>
+
                         <div class="col-12 text-center">
-                            <div class="loading">Yükleniyor…</div>
-                            <div class="error-message"></div>
-                            <div class="sent-message">Talebiniz başarıyla gönderildi. Teşekkür ederiz!</div>
-                            <button type="submit">Teklif Al</button>
+                            <div class="loading" style="display:none;">Yükleniyor…</div>
+                            <div class="error-message" style="display:none;"></div>
+                            <div class="sent-message" style="display:none;">Talebiniz başarıyla gönderildi. Teşekkür
+                                ederiz!
+                            </div>
+                            <button type="submit" class="btn btn-warning"
+                                    style="background-color:#f9a825; border:none; color:#fff;">
+                                Teklif Al
+                            </button>
+
                         </div>
                     </div>
                 </form>
@@ -46,3 +58,65 @@
         </div>
     </div>
 </section>
+
+<script>
+    // CSRF cookie helper
+    function getCookie(name) {
+        const m = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+        return m ? m.pop() : '';
+    }
+
+    (function () {
+        const form = document.getElementById('getStartedForm');
+        if (!form) return;
+
+        // Güvenlik: yanlışlıkla bırakılmışsa php-email-form sınıfını kaldır
+        form.classList.remove('php-email-form');
+
+        const csrftoken = getCookie('csrftoken');
+        const loadingEl = form.querySelector('.loading');
+        const errorEl = form.querySelector('.error-message');
+        const sentEl = form.querySelector('.sent-message');
+        const submitBtn = document.getElementById('gsSubmit');
+
+        form.addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            if (loadingEl) loadingEl.style.display = 'block';
+            if (errorEl) {
+                errorEl.style.display = 'none';
+                errorEl.textContent = '';
+            }
+            if (sentEl) sentEl.style.display = 'none';
+            if (submitBtn) submitBtn.disabled = true;
+
+            try {
+                const resp = await fetch(form.action, {
+                    method: 'POST',
+                    headers: {'X-CSRFToken': csrftoken},
+                    body: new FormData(form)
+                });
+                const data = await resp.json().catch(() => ({}));
+
+                if (!resp.ok || !data.ok) {
+                    const msg = (data.errors && Object.values(data.errors).join(' ')) || 'Gönderim başarısız.';
+                    if (errorEl) {
+                        errorEl.textContent = msg;
+                        errorEl.style.display = 'block';
+                    }
+                } else {
+                    if (sentEl) sentEl.style.display = 'block';
+                    form.reset();
+                }
+            } catch (err) {
+                if (errorEl) {
+                    errorEl.textContent = 'Sunucuya ulaşılamadı. Lütfen daha sonra deneyin.';
+                    errorEl.style.display = 'block';
+                }
+            } finally {
+                if (loadingEl) loadingEl.style.display = 'none';
+                if (submitBtn) submitBtn.disabled = false;
+            }
+        });
+    })();
+</script>

@@ -1,4 +1,3 @@
-# models.py
 import uuid
 from django.db import models
 from django.utils.text import slugify
@@ -11,6 +10,12 @@ class ProjectCategory(models.Model):
     is_active = models.BooleanField(default=True)
     icon_class = models.CharField(max_length=100, blank=True)
 
+    class Meta:
+        db_table = "project_categories"
+        ordering = ["order", "id"]
+        verbose_name = "Proje Kategorisi"
+        verbose_name_plural = "Proje Kategorileri"
+
     def __str__(self):
         return self.name
 
@@ -21,6 +26,12 @@ class Project(models.Model):
     cover = models.ImageField(upload_to="projects/covers/", blank=True, null=True)
     slug = models.SlugField(unique=True, blank=True)
     categories = models.ManyToManyField(ProjectCategory, related_name="projects", blank=True)
+
+    class Meta:
+        db_table = "projects"
+        ordering = ["id"]
+        verbose_name = "Proje"
+        verbose_name_plural = "Projeler"
 
     def __str__(self):
         return self.title
@@ -34,7 +45,6 @@ class Project(models.Model):
         cats = list(self.categories.all())
         return " ".join([c.isotope_class for c in cats]) if cats else "filter-uncategorized"
 
-    # Kapak yoksa final/render görsellerinden biriyle otomatik düşmek için:
     @property
     def effective_cover(self):
         if self.cover:
@@ -46,7 +56,6 @@ class Project(models.Model):
 
 
 def project_gallery_upload_to(instance, filename):
-    # projects/<slug>/gallery/<uuid>.<ext>
     ext = filename.split(".")[-1].lower()
     base = instance.project.slug or "unassigned"
     return f"projects/{base}/gallery/{uuid.uuid4().hex}.{ext}"
@@ -69,7 +78,6 @@ class ProjectImage(models.Model):
     order = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField(default=True)
 
-    # Öncesi–sonrası ikililerini eşleştirmek için aynı anahtar:
     pair_key = models.CharField(
         max_length=50, blank=True,
         help_text="Aynı anahtardaki BEFORE & AFTER görselleri slider'da eşleşir (örn: 'mutfak-1')."
@@ -78,13 +86,15 @@ class ProjectImage(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        db_table = "project_images"
         ordering = ("order", "id")
+        verbose_name = "Proje Görseli"
+        verbose_name_plural = "Proje Görselleri"
 
     def __str__(self):
         return f"{self.project.title} | {self.get_kind_display()} | {self.title or self.image.name}"
 
 
-# Projede eşleşmiş before/after çiftleri (template’te kolay kullanım için)
 def before_after_pairs(self):
     pairs = {}
     qs = self.images.filter(is_active=True, pair_key__gt="",
@@ -96,5 +106,25 @@ def before_after_pairs(self):
             for _, d in pairs.items() if d.get(ProjectImage.Kind.BEFORE) and d.get(ProjectImage.Kind.AFTER)]
 
 
-# Project içine helper'ı enjekte edelim (istersen method olarak da ekleyebilirsin)
 Project.before_after_pairs = before_after_pairs
+
+
+class ContactMessage(models.Model):
+    name = models.CharField(max_length=150)
+    email = models.EmailField()
+    phone = models.CharField(max_length=30, blank=True, null=True)
+    subject = models.CharField(max_length=200, blank=True, null=True)
+    message = models.TextField()
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    is_read = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = "contact_messages"
+        ordering = ["-created_at"]
+        verbose_name = "İletişim Mesajı"
+        verbose_name_plural = "İletişim Mesajları"
+
+    def __str__(self):
+        return f"{self.name} - {self.subject or 'Mesaj'}"

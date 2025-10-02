@@ -1,0 +1,63 @@
+{% extends "main/base.html" %}
+{% load static %}
+
+{% block body_class %}admin-dashboard-page{% endblock %}
+
+{% block content %}
+    <div class="page-title dark-background"
+         style="background-image: url({% static 'assets/img/services/atolye.png' %});">
+        <div class="container position-relative">
+            <h1>Yönetim İşlemleri</h1>
+            <nav class="breadcrumbs">
+                <ol>
+                    <li><a href="{% url 'main:home' %}">Anasayfa</a></li>
+                    <li class="current">Yönetim İşlemleri</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <section class="section">
+        <div class="container">
+            <div class="row gy-4">
+
+                <!-- Mesajlar kartı -->
+                <div class="col-md-6 col-lg-4">
+                    <div class="info-item d-flex flex-column justify-content-center align-items-center text-center">
+                        <i class="bi bi-chat-dots"></i>
+                        <h3 class="mb-1">
+                            Gelen Mesajlar
+                            {% if unread_count %}
+                                <span class="badge bg-danger align-middle ms-1">{{ unread_count }}</span>
+                            {% endif %}
+                        </h3>
+                        <p class="mb-2">İletişim formundan gelen kayıtları görüntüle ve okundu işaretle.</p>
+                        <a href="{% url 'backoffice:manager_messages' %}" class="btn btn-primary mt-1">Mesajları Aç</a>
+                        <small class="text-muted mt-2">Toplam: {{ total_count }}</small>
+                    </div>
+                </div>
+
+                <!-- Görsel yükleme kartı -->
+                <div class="col-md-6 col-lg-4">
+                    <div class="info-item d-flex flex-column justify-content-center align-items-center text-center">
+                        <i class="bi bi-cloud-upload"></i>
+                        <h3>Görsel Yükle</h3>
+                        <p>Projeler için görsel/dosya ekleyin (ileride Project ile ilişkilendirilebilir).</p>
+                        <a href="{% url 'backoffice:manager_upload' %}" class="btn btn-primary mt-2">Yükle</a>
+                    </div>
+                </div>
+
+                <!-- Çıkış kartı -->
+                <div class="col-md-6 col-lg-4">
+                    <div class="info-item d-flex flex-column justify-content-center align-items-center text-center">
+                        <i class="bi bi-box-arrow-right"></i>
+                        <h3>Oturum</h3>
+                        <p>Yönetici oturumunu sonlandır.</p>
+                        <a href="{% url 'backoffice:manager_logout' %}" class="btn btn-outline-secondary mt-2">Çıkış</a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+{% endblock %}

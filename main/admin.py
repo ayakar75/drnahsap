@@ -1,5 +1,7 @@
 # main/admin.py
 from django.contrib import admin
+from .models import ContactMessage
+
 
 # Modeller
 try:
@@ -54,3 +56,11 @@ class ProjectCategoryAdmin(admin.ModelAdmin):
     search_fields = ("name",)
     prepopulated_fields = {"slug": ("name",)}
     ordering = ("order", "name")
+
+
+@admin.register(ContactMessage)
+class ContactMessageAdmin(admin.ModelAdmin):
+    list_display = ("name", "email", "subject", "is_read", "created_at")
+    list_filter = ("is_read", "created_at")
+    search_fields = ("name", "email", "subject", "message")
+    ordering = ("-created_at",)
