@@ -1,0 +1,112 @@
+{% extends "main/base.html" %}
+{% load static %}
+
+{% block body_class %}ownership-page{% endblock %}
+
+{% block content %}
+    <!-- Page Title -->
+    <div class="page-title dark-background"
+         style="background-image: url({% static 'assets/img/services/atolye.png' %});">
+        <div class="container position-relative">
+            <h1>Mülkiyet Hakları</h1>
+            <nav class="breadcrumbs">
+                <ol>
+                    <li><a href="{% url 'main:home' %}">Anasayfa</a></li>
+                    <li class="current">Mülkiyet Hakları</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Giriş -->
+    <section class="section">
+        <div class="container">
+            <div class="row gy-4 align-items-center">
+                <div class="col-lg-6">
+                    <img src="{% static 'assets/img/ownership/ownership-main.png' %}"
+                         alt="Telif ve Mülkiyet Hakları" class="img-fluid rounded-4">
+                </div>
+                <div class="col-lg-6">
+                    <h2 class="mb-3">Telif Hakkı, Marka ve Fikri Mülkiyet</h2>
+                    <p class="lead mb-3">
+                        Bu web sitesi, içeriği ve tasarımı; 5846 sayılı Fikir ve Sanat Eserleri Kanunu
+                        (FSEK) ve ilgili diğer mevzuat kapsamında koruma altındadır.
+                    </p>
+                    <ul class="list-unstyled mb-0">
+                        <li><i class="bi bi-check-circle me-2"></i> Tüm görseller, metinler ve logolar yasal koruma
+                            altındadır.
+                        </li>
+                        <li><i class="bi bi-check-circle me-2"></i> İzinsiz kopyalama, çoğaltma ve dağıtım yasaktır.
+                        </li>
+                        <li><i class="bi bi-check-circle me-2"></i> Kullanım izinleri yalnızca yazılı onayla verilir.
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- İçerik -->
+    <section class="alt-services section">
+        <div class="container">
+            <div class="row justify-content-around gy-4">
+                <div class="features-image col-lg-6">
+                    <img src="{% static 'assets/img/ownership/ownership-law.png' %}" alt="Fikri Mülkiyet Yasası">
+                </div>
+                <div class="col-lg-5 d-flex flex-column justify-content-center">
+                    <h3>Korunan Unsurlar</h3>
+                    <p>Bu web sitesinde yer alan tüm tasarımlar, kodlar, görseller, metinler, logolar,
+                        ürün isimleri, çizimler ve fotoğraflar telif hakkı kapsamında korunmaktadır.</p>
+
+                    <div class="icon-box d-flex position-relative">
+                        <i class="bi bi-shield-lock flex-shrink-0"></i>
+                        <div>
+                            <h4>Fikri Haklar</h4>
+                            <p>Tasarım, yazılım ve metin içerikleri eser sahibine veya lisans sahiplerine aittir.</p>
+                        </div>
+                    </div>
+
+                    <div class="icon-box d-flex position-relative">
+                        <i class="bi bi-c-circle flex-shrink-0"></i>
+                        <div>
+                            <h4>Telif Hakları</h4>
+                            <p>Her türlü çoğaltma, paylaşım veya ticari kullanım önceden izin alınmadan yapılamaz.</p>
+                        </div>
+                    </div>
+
+                    <div class="icon-box d-flex position-relative">
+                        <i class="fa fa-trademark flex-shrink-0"></i>
+                        <div>
+                            <h4>Marka Kullanımı</h4>
+                            <p>“DRN Ahşap Atölyesi” markası ve logosu tescilli olup izinsiz kullanımı yasaktır.</p>
+                        </div>
+                    </div>
+
+                    <div class="icon-box d-flex position-relative">
+                        <i class="fa fa-balance-scale flex-shrink-0"></i>
+                        <div>
+                            <h4>Yasal Sorumluluk</h4>
+                            <p>İzinsiz kullanım tespiti halinde FSEK, TTK ve ilgili mevzuat uyarınca hukuki işlem
+                                başlatılır.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Son Bölüm -->
+    <section class="section bg-light">
+        <div class="container">
+            <div class="section-header text-center">
+                <h2>Kullanım ve İzinler</h2>
+                <p>
+                    İçerik veya görsellerin kullanımına ilişkin izin talepleriniz için bizimle
+                    <a href="{% url 'main:contact' %}">iletişim sayfamızdan</a> iletişime geçebilirsiniz.
+                </p>
+
+
+            </div>
+        </div>
+    </section>
+{% endblock %}

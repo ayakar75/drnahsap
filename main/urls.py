@@ -24,5 +24,6 @@ urlpatterns = [
     path("contact/", views.contact, name="contact"),
     path("terms/", views.terms, name="terms"),
     path("privacy/", views.privacy, name="privacy"),
+    path("ownership/", views.ownership, name="ownership"),  # 👈 Yeni eklendi
     path("contact/submit/", views.contact_message_api, name="contact_message_api"),
 ]

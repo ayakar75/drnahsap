@@ -1,0 +1,112 @@
+{% extends "main/base.html" %}
+{% load static %}
+
+{% block body_class %}privacy-page{% endblock %}
+
+{% block content %}
+    <!-- Page Title -->
+    <div class="page-title dark-background"
+         style="background-image: url({% static 'assets/img/services/atolye.png' %});">
+        <div class="container position-relative">
+            <h1>Gizlilik Politikası</h1>
+            <nav class="breadcrumbs">
+                <ol>
+                    <li><a href="{% url 'main:home' %}">Anasayfa</a></li>
+                    <li class="current">Gizlilik Politikası</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Giriş -->
+    <section class="section">
+        <div class="container">
+            <div class="row gy-4 align-items-center">
+                <div class="col-lg-6">
+                    <img src="{% static 'assets/img/privacy/privacy-main.png' %}" alt="Gizlilik Politikası"
+                         class="img-fluid rounded-4">
+                </div>
+                <div class="col-lg-6">
+                    <h2 class="mb-3">Kişisel Verilerinizin Güvenliği Bizim İçin Önemli</h2>
+                    <p class="lead mb-3">
+                        Web sitemizi ziyaret ettiğinizde veya bizimle iletişime geçtiğinizde paylaştığınız
+                        bilgilerin güvenliği ve gizliliği bizim için önceliklidir. Aşağıda, hangi verilerin
+                        toplandığını, nasıl kullanıldığını ve haklarınızı bulabilirsiniz.
+                    </p>
+                    <ul class="list-unstyled mb-0">
+                        <li><i class="bi bi-check-circle me-2"></i> KVKK ve yürürlükteki mevzuatlara tam uyum</li>
+                        <li><i class="bi bi-check-circle me-2"></i> Verilerin yalnızca belirtilen amaçlarla kullanımı
+                        </li>
+                        <li><i class="bi bi-check-circle me-2"></i> Üçüncü şahıslarla paylaşımda şeffaflık</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- İçerik -->
+    <section class="alt-services section">
+        <div class="container">
+            <div class="row justify-content-around gy-4">
+                <div class="features-image col-lg-6">
+                    <img src="{% static 'assets/img/privacy/privacy-data.png' %}" alt="Veri Koruma">
+                </div>
+                <div class="col-lg-5 d-flex flex-column justify-content-center">
+                    <h3>Veri Toplama ve Kullanım İlkeleri</h3>
+                    <p>
+                        Sitemizi ziyaret ettiğinizde ad, e-posta, telefon gibi kişisel veriler yalnızca sizin onayınızla
+                        toplanır.
+                        Bu veriler, iletişim kurmak, teklif hazırlamak ve hizmet taleplerinizi karşılamak amacıyla
+                        kullanılır.
+                    </p>
+
+                    <div class="icon-box d-flex position-relative">
+                        <i class="bi bi-lock flex-shrink-0"></i>
+                        <div>
+                            <h4>Veri Güvenliği</h4>
+                            <p>Tüm kişisel veriler güvenli sunucularda saklanır, erişim sınırlıdır.</p>
+                        </div>
+                    </div>
+
+                    <div class="icon-box d-flex position-relative">
+                        <i class="bi bi-person-badge flex-shrink-0"></i>
+                        <div>
+                            <h4>Veri Sınırlılığı</h4>
+                            <p>Yalnızca gerekli bilgiler toplanır, fazlası kayıt altına alınmaz.</p>
+                        </div>
+                    </div>
+
+                    <div class="icon-box d-flex position-relative">
+                        <i class="bi bi-cookie flex-shrink-0"></i>
+                        <div>
+                            <h4>Çerez Kullanımı</h4>
+                            <p>Kullanıcı deneyimini geliştirmek amacıyla sınırlı çerezler kullanılır.</p>
+                        </div>
+                    </div>
+
+                    <div class="icon-box d-flex position-relative">
+                        <i class="bi bi-shield-check flex-shrink-0"></i>
+                        <div>
+                            <h4>Haklarınız</h4>
+                            <p>KVKK uyarınca verilerinize erişme, düzeltme veya silinmesini talep etme hakkına
+                                sahipsiniz.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Son Bölüm -->
+    <section class="section bg-light">
+        <div class="container">
+            <div class="section-header text-center">
+                <h2>İletişim ve Bilgi Talepleri</h2>
+                <p>
+                    Gizlilik politikamız veya veri koruma süreçlerimizle ilgili her türlü soru için bizimle
+                    <a href="{% url 'main:contact' %}">iletişim sayfamızdan</a> iletişime geçebilirsiniz.
+                </p>
+            </div>
+        </div>
+    </section>
+{% endblock %}

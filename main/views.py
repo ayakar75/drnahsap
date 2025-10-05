@@ -1,10 +1,10 @@
+from datetime import datetime
 from django.core.paginator import Paginator
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from .models import ContactMessage
 from django.http import HttpRequest, HttpResponse
-
 
 
 def projects_main(request):
@@ -116,8 +116,20 @@ def terms(request: HttpRequest) -> HttpResponse:
 
 
 def privacy(request: HttpRequest) -> HttpResponse:
-    # templates/main/blog.html
-    return render(request, "main/includes/privacy.html")
+    """
+       Gizlilik ve verilerin korunması.
+       """
+    return render(request, "main/privacy.html")
+
+
+def ownership(request):
+    """
+    Mülkiyet Hakları sayfası view fonksiyonu.
+    """
+    context = {
+        "current_date": datetime.now().strftime("%B %Y"),  # sayfada 'Son güncelleme tarihi' için
+    }
+    return render(request, "main/ownership.html", context)
 
 
 from django.shortcuts import render, get_object_or_404
@@ -169,9 +181,9 @@ def projects_grid(request):
 @require_POST
 @csrf_protect
 def contact_message_api(request):
-    name    = request.POST.get("name", "").strip()
-    email   = request.POST.get("email", "").strip()
-    phone   = request.POST.get("phone", "").strip()
+    name = request.POST.get("name", "").strip()
+    email = request.POST.get("email", "").strip()
+    phone = request.POST.get("phone", "").strip()
     subject = request.POST.get("subject", "").strip()
     message = request.POST.get("message", "").strip()
 
