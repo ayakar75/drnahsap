@@ -60,21 +60,28 @@
                             src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d12539.91829213486!2d29.1504562!3d40.9355111!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0!2sZümrütevler%20Mahallesi%20Canay%20Sokak%20No%3A12%20Maltepe%2FİSTANBUL!5e0!3m2!1str!2str!4v1700000000000!5m2!1str!2str"
                             style="border:0; width:100%; height:400px;"
                             allowfullscreen="" loading="lazy"
-                            referrerpolicy="no-referrer-when-downgrade">
-                    </iframe>
+                            referrerpolicy="no-referrer-when-downgrade"></iframe>
                 </div>
-
 
                 <!-- Form -->
                 <div class="col-lg-6">
-                    <form action="{% url 'main:contact' %}" method="post" class="php-email-form">
+                    <form id="contactForm" action="{% url 'main:contact_message_api' %}" method="post"
+                          class="gs-email-form">
                         {% csrf_token %}
-                        <div class="row gy-4">
-                            <div class="col-md-6">
+                        <div class="row gy-3">
+                            <div class="col-md-12">
                                 <input type="text" name="name" class="form-control" placeholder="Ad Soyad" required>
                             </div>
                             <div class="col-md-6">
-                                <input type="email" name="email" class="form-control" placeholder="E-posta" required>
+                                <input type="text" class="form-control" name="phone" placeholder="Telefon">
+                            </div>
+                            <div class="col-md-6">
+                                <input type="email" name="email" class="form-control" placeholder="E-posta">
+                            </div>
+                            <div class="col-md-12">
+                                <small class="text-muted d-block mt-1 mb-2" style="font-size:0.85rem;">
+                                    *Sizinle iletişim kurabilmek için lütfen telefon veya e-posta adresinizi yazınız.
+                                </small>
                             </div>
                             <div class="col-md-12">
                                 <input type="text" name="subject" class="form-control" placeholder="Konu" required>
@@ -84,17 +91,23 @@
                                           required></textarea>
                             </div>
 
-                            <!-- İsteğe bağlı: gönderim durum mesajları -->
-                            {% if messages %}
-                                <div class="col-md-12">
-                                    {% for m in messages %}
-                                        <div class="alert alert-{{ m.tags }}">{{ m }}</div>
-                                    {% endfor %}
+                            <!-- Geri bildirim mesajları -->
+                            <div class="col-md-12 text-center">
+                                <div class="loading" style="display:none;">Yükleniyor…</div>
+                                <div class="error-message" style="display:none; color:#d32f2f;"
+                                     aria-live="polite"></div>
+                                <div class="sent-message" style="display:none; color:#388e3c; font-weight:500;"
+                                     aria-live="polite">
+                                    Mesajınız başarıyla gönderildi. Teşekkür ederiz!
                                 </div>
-                            {% endif %}
+                            </div>
 
                             <div class="col-md-12 text-center">
-                                <button type="submit">Gönder</button>
+                                <button id="contactSubmit" type="submit"
+                                        class="btn btn-warning text-white px-4 py-2 rounded-pill"
+                                        style="font-weight:500;">
+                                    Gönder
+                                </button>
                             </div>
                         </div>
                     </form>
@@ -103,4 +116,65 @@
 
         </div>
     </section>
+
+    <!-- Inline JS: blok içinde olmalı ki render edilsin -->
+    <script>
+        // CSRF cookie helper
+        function getCookie(name) {
+            const m = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+            return m ? m.pop() : '';
+        }
+
+        (function () {
+            const form = document.getElementById('contactForm');
+            if (!form) return;
+
+            const csrftoken = getCookie('csrftoken');
+            const loadingEl = form.querySelector('.loading');
+            const errorEl = form.querySelector('.error-message');
+            const sentEl = form.querySelector('.sent-message');
+            const submitBtn = document.getElementById('contactSubmit');
+
+            form.addEventListener('submit', async function (e) {
+                e.preventDefault();
+
+                loadingEl.style.display = 'block';
+                errorEl.style.display = 'none';
+                sentEl.style.display = 'none';
+                submitBtn.disabled = true;
+
+                try {
+                    const resp = await fetch(form.action, {
+                        method: 'POST',
+                        headers: {'X-CSRFToken': csrftoken},
+                        body: new FormData(form)
+                    });
+                    const data = await resp.json().catch(() => ({}));
+
+                    if (!resp.ok || !data.ok) {
+                        const msg = (data && data.errors)
+                            ? Object.values(data.errors).join(' ')
+                            : 'Gönderim başarısız. Lütfen tekrar deneyin.';
+                        errorEl.textContent = msg;
+                        errorEl.style.display = 'block';
+                    } else {
+                        sentEl.style.display = 'block';
+                        form.reset();
+
+                        // ✅ 5 saniye sonra başarı mesajını otomatik gizle
+                        setTimeout(() => {
+                            sentEl.style.display = 'none';
+                        }, 5000);
+                    }
+                } catch (err) {
+                    errorEl.textContent = 'Sunucuya ulaşılamadı. Lütfen daha sonra tekrar deneyin.';
+                    errorEl.style.display = 'block';
+                } finally {
+                    loadingEl.style.display = 'none';
+                    submitBtn.disabled = false;
+                }
+            });
+        })();
+    </script>
+
 {% endblock %}

@@ -110,6 +110,11 @@
                 } else {
                     if (sentEl) sentEl.style.display = 'block';
                     form.reset();
+
+                    // ✅ 5 saniye sonra başarı mesajını otomatik gizle
+                    setTimeout(() => {
+                        sentEl.style.display = 'none';
+                    }, 5000);
                 }
             } catch (err) {
                 if (errorEl) {
