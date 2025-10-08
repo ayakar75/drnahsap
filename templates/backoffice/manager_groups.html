@@ -1,0 +1,178 @@
+{% extends "main/base.html" %}
+{% load static %}
+
+{% block body_class %}group-manager{% endblock %}
+
+{% block content %}
+    <div class="page-title dark-background"
+         style="background-image:url({% static 'assets/img/services/atolye.png' %});">
+        <div class="container position-relative">
+            <h1>Portföy Yönetimi (Grup Bazlı)</h1>
+            <nav class="breadcrumbs">
+                <ol>
+                    <li><a href="{% url 'main:home' %}">Anasayfa</a></li>
+                    <li><a href="{% url 'backoffice:manager_dashboard' %}">Yönetim İşlemleri</a></li>
+                    <li class="current">Portföy Yönetimi</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <section class="section">
+        <div class="container">
+
+            <!-- Yeni grup -->
+            <div class="card p-3 mb-4">
+                <div class="d-flex gap-2">
+                    <input id="newName" class="form-control" placeholder="Yeni grup adı (örn: Mutfak)">
+                    <button id="addGroupBtn" class="btn btn-outline-primary">Ekle</button>
+                    <span id="addGroupMsg" class="ms-2"></span>
+                </div>
+            </div>
+
+            <!-- Gruplar -->
+            <div class="row g-3" id="groups">
+                {% for p in portfolios %}
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <div><strong>{{ p.name }}</strong> <small class="text-muted">ID: {{ p.id }}</small>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <input type="file" id="up-{{ p.id }}" data-pid="{{ p.id }}" multiple
+                                           class="form-control form-control-sm">
+                                    <button class="btn btn-sm btn-primary" data-upload="{{ p.id }}">Yükle</button>
+                                    <button class="btn btn-sm btn-success" data-save="{{ p.id }}">Sırayı Kaydet</button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-flex flex-wrap gap-2 sortable" id="list-{{ p.id }}" data-pid="{{ p.id }}">
+                                    {% for link in p.portfolioimage_set.all %}
+                                        <div class="thumb border rounded position-relative"
+                                             data-image-id="{{ link.image.id }}"
+                                             style="width:120px;height:90px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:#fafafa;cursor:grab;">
+                                            <img src="{{ link.image.image.url }}"
+                                                 style="max-width:100%;max-height:100%;">
+                                            <button class="btn btn-xs btn-light border position-absolute top-0 end-0 m-1"
+                                                    data-remove="{{ p.id }}-{{ link.image.id }}"
+                                                    title="Bu gruptan kaldır">×
+                                            </button>
+                                        </div>
+                                    {% empty %}
+                                        <div class="text-muted">Henüz görsel eklenmemiş.</div>
+                                    {% endfor %}
+                                </div>
+                                <div id="msg-{{ p.id }}" class="mt-2 small"></div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+        </div>
+    </section>
+
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+    <script>
+        (function () {
+            function csrftoken() {
+                return (document.cookie.match('(^|;)\\s*csrftoken\\s*=\\s*([^;]+)') || []).pop() || '';
+            }
+
+            // 1️⃣ Grup içleri sürükle-bırak
+            document.querySelectorAll('.sortable').forEach(el => new Sortable(el, {group: 'g', animation: 120}));
+
+            // 2️⃣ Yükle (sadece bu gruba)
+            document.querySelectorAll('[data-upload]').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const pid = btn.dataset.upload;
+                    const input = document.getElementById('up-' + pid);
+                    const files = Array.from(input.files);
+                    if (!files.length) return;
+                    const msg = document.getElementById('msg-' + pid);
+                    let created = 0;
+                    const chunk = 25;
+                    for (let i = 0; i < files.length; i += chunk) {
+                        const fd = new FormData();
+                        files.slice(i, i + chunk).forEach(f => fd.append('files', f));
+                        const resp = await fetch("{% url 'backoffice:group_upload' 0 %}".replace('/0/', '/' + pid + '/'), {
+                            method: 'POST', headers: {'X-CSRFToken': csrftoken()}, body: fd
+                        });
+                        const data = await resp.json().catch(() => ({}));
+                        if (!resp.ok || !data.ok) {
+                            msg.textContent = 'Yükleme hatası';
+                            msg.className = 'text-danger';
+                            return;
+                        }
+                        created += (data.created || 0);
+                        msg.textContent = `Yüklendi: ${created}/${files.length}`;
+                        msg.className = 'text-success';
+                    }
+                    location.reload();
+                });
+            });
+
+            // 3️⃣ Sırayı Kaydet
+            document.querySelectorAll('[data-save]').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const pid = btn.dataset.save;
+                    const list = document.getElementById('list-' + pid);
+                    const ids = Array.from(list.querySelectorAll('.thumb')).map(x => x.dataset.imageId).join(',');
+                    const msg = document.getElementById('msg-' + pid);
+                    const resp = await fetch("{% url 'backoffice:group_save_order' 0 %}".replace('/0/', '/' + pid + '/'), {
+                        method: 'POST',
+                        headers: {'X-CSRFToken': csrftoken(), 'Content-Type': 'application/x-www-form-urlencoded'},
+                        body: 'order=' + encodeURIComponent(ids)
+                    });
+                    const data = await resp.json().catch(() => ({}));
+                    if (!resp.ok || !data.ok) {
+                        msg.textContent = 'Kaydetme hatası';
+                        msg.className = 'text-danger';
+                        return;
+                    }
+                    msg.textContent = 'Sıra kaydedildi';
+                    msg.className = 'text-success';
+                    setTimeout(() => msg.textContent = '', 2500);
+                });
+            });
+
+            // 4️⃣ Görsel kaldır (×)
+            document.querySelectorAll('[data-remove]').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const [pid, imageId] = btn.dataset.remove.split('-');
+                    const resp = await fetch("{% url 'backoffice:group_remove_image' 0 0 %}"
+                        .replace('/0/0/', '/' + pid + '/' + imageId + '/'), {
+                        method: 'POST', headers: {'X-CSRFToken': csrftoken()}
+                    });
+                    const data = await resp.json().catch(() => ({}));
+                    if (data.ok) btn.closest('.thumb').remove();
+                });
+            });
+
+            // 5️⃣ Yeni grup ekle
+            document.getElementById('addGroupBtn')?.addEventListener('click', async () => {
+                const nameInput = document.getElementById('newName');
+                const msg = document.getElementById('addGroupMsg');
+                const name = (nameInput.value || '').trim();
+                if (!name) {
+                    msg.textContent = 'İsim giriniz';
+                    msg.className = 'text-danger';
+                    return;
+                }
+                const resp = await fetch("{% url 'backoffice:group_create_portfolio' %}", {
+                    method: 'POST',
+                    headers: {'X-CSRFToken': csrftoken(), 'Content-Type': 'application/x-www-form-urlencoded'},
+                    body: 'name=' + encodeURIComponent(name)
+                });
+                const data = await resp.json().catch(() => ({}));
+                if (!resp.ok || !data.ok) {
+                    msg.textContent = 'Hata';
+                    msg.className = 'text-danger';
+                    return;
+                }
+                location.reload();
+            });
+        })();
+    </script>
+
+{% endblock %}

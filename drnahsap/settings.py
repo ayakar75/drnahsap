@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'main',
     'backoffice',
+
 ]
 
 MIDDLEWARE = [
@@ -135,3 +136,16 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 LOGIN_URL = "/yonetici/"
 LOGIN_REDIRECT_URL = "/yonetici/panel/"
+
+# Toplam POST gövdesi limiti
+# Geliştirmede sınırsız yapmak için None verebilirsin:
+DATA_UPLOAD_MAX_MEMORY_SIZE = None  # veya 2 * 1024 * 1024 * 1024  (2GB)
+
+# Tek dosyanın RAM'de tutulma eşiği (üstünü disk temp'e yazar)
+FILE_UPLOAD_MAX_MEMORY_SIZE = 50 * 1024 * 1024  # 50 MB (foto için güvenli)
+
+# Çok alanlı formlar için sınır
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 50000
+
+# Geçici upload klasörü (diskte bol alan olan bir yer seç)
+FILE_UPLOAD_TEMP_DIR = BASE_DIR / "tmp_uploads"

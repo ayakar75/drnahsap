@@ -1,0 +1,447 @@
+{% extends "main/base.html" %}
+{% load static %}
+
+{% block body_class %}upload-page{% endblock %}
+
+{% block content %}
+    <style>
+        /* Havuzdaki kartta "atanmış" işareti */
+        .thumb.assigned {
+            position: relative;
+        }
+
+        .thumb.assigned::after {
+            content: "✓";
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #28a745;
+            color: #fff;
+            font-weight: 700;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 0 2px #fff;
+        }
+
+        /* Son işlem yapılan havuz öğesini kısa süre parlat */
+        .thumb.recent {
+            outline: 2px solid #0d6efd;
+            outline-offset: 2px;
+        }
+    </style>
+
+    <!-- Üst başlık / breadcrumbs -->
+    <div class="page-title dark-background"
+         style="background-image: url({% static 'assets/img/services/atolye.png' %});">
+        <div class="container position-relative">
+            <h1>Görselleri Yükle ve Gruplara Ata</h1>
+            <nav class="breadcrumbs">
+                <ol>
+                    <li><a href="{% url 'main:home' %}">Anasayfa</a></li>
+                    <li><a href="{% url 'backoffice:manager_dashboard' %}">Yönetim İşlemleri</a></li>
+                    <li class="current">Görsel Yükle / Ata</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <!-- İçerik -->
+    <section class="section">
+        <div class="container" data-aos="fade">
+
+            <!-- 1️⃣ Çoklu Yükleme -->
+            <div class="card mb-4 p-3">
+                <form id="uploadForm" class="row g-2 align-items-center">
+                    {% csrf_token %}
+                    <div class="col-md-8">
+                        <input class="form-control" type="file" name="files" id="files" multiple>
+                        <small class="text-muted">Birden çok dosya seçebilirsiniz.</small>
+                    </div>
+                    <div class="col-md-4 d-grid">
+                        <button type="submit" class="btn btn-primary">Yükle</button>
+                    </div>
+                </form>
+                <div id="uploadMsg" class="mt-2"></div>
+            </div>
+
+            <div class="row gy-3">
+                <!-- 2️⃣ Sol: Havuz (atanmamışlar) -->
+                <div class="col-lg-5">
+                    <div class="border rounded-3">
+                        <div class="d-flex align-items-center justify-content-between p-2 bg-light border-bottom">
+                            <strong>Görsel Havuzu (atanmamış)</strong>
+                            <div class="d-flex gap-2">
+                                <input id="poolSearch" type="search" class="form-control form-control-sm"
+                                       placeholder="Havuzda ara">
+                                <button class="btn btn-sm btn-outline-secondary" id="clearFilter">Temizle</button>
+                            </div>
+                        </div>
+                        <div id="list-pool" class="p-2 d-flex flex-wrap gap-2" data-list-id="pool">
+                            {% for img in unassigned %}
+                                <div class="thumb border rounded"
+                                     data-image-id="{{ img.id }}"
+                                     data-title="{{ img.title|default_if_none:''|lower }}"
+                                     style="width:110px;height:80px;overflow:hidden;cursor:grab;
+                                            display:flex;align-items:center;justify-content:center;background:#fafafa">
+                                    <img src="{{ img.image.url }}" style="max-width:100%;max-height:100%;" alt="">
+                                </div>
+                            {% empty %}
+                                <div class="text-muted p-2">Tüm görseller en az bir grupta.</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3️⃣ Sağ: Gruplar (portföy sütunları) -->
+                <div class="col-lg-7">
+                    <!-- Yeni grup oluşturma -->
+                    <div class="border rounded-3 mb-3">
+                        <div class="d-flex align-items-center justify-content-between p-2 bg-light border-bottom">
+                            <strong>Yeni Grup Oluştur</strong>
+                        </div>
+                        <div class="p-2 d-flex gap-2">
+                            <input id="newPortfolioName" class="form-control" placeholder="Örn: Mutfak">
+                            <button id="createPortfolioBtn" class="btn btn-outline-primary">Ekle</button>
+                            <span id="createResult" style="display:none;"></span>
+                        </div>
+                    </div>
+
+                    {% for p in portfolios %}
+                        <div class="border rounded-3 mb-3">
+                            <div class="d-flex align-items-center justify-content-between p-2 bg-light border-bottom">
+                                <strong>{{ p.name }}</strong>
+                                <small class="text-muted">ID: {{ p.id }}</small>
+                            </div>
+                            <div id="list-{{ p.id }}" class="p-2 d-flex flex-wrap gap-2" data-list-id="{{ p.id }}">
+                                {# Görseller JS ile doldurulacak #}
+                            </div>
+                        </div>
+                    {% endfor %}
+
+                    <script>
+                        const INITIAL = {
+                            {% for p in portfolios %}
+                                "{{ p.id }}": [
+                                    {% for link in p.portfolioimage_set.all %}
+                                        {"id": {{ link.image.id }}, "url": "{{ link.image.image.url|escapejs }}"},
+                                    {% endfor %}
+                                ],
+                            {% endfor %}
+                        };
+                    </script>
+
+                    <div class="d-flex gap-2 mt-3">
+                        <button id="saveBtn" class="btn btn-success">Kaydet</button>
+                        <a href="{% url 'backoffice:manager_dashboard' %}" class="btn btn-secondary">
+                            ← Yönetim Paneline Dön
+                        </a>
+                        <span id="saveResult" class="ms-2"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ JS ============ -->
+    <script src="{% static 'assets/vendor/custom/Sortable.min.js' %}"></script>
+    <script>
+        // --- Sortable.js yükle (static yoksa CDN'den) ---
+        (function ensureSortable(cb) {
+            function ok() {
+                cb && cb();
+            }
+
+            if (window.Sortable) return ok();
+            var s = document.createElement('script');
+            s.src = "{% static 'assets/vendor/custom/Sortable.min.js' %}";
+            s.onload = ok;
+            s.onerror = function () {
+                var cdn = document.createElement('script');
+                cdn.src = "https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js";
+                cdn.onload = ok;
+                document.head.appendChild(cdn);
+            };
+            document.head.appendChild(s);
+        })(function initDnD() {
+
+            // 1) Sağ sütunları INITIAL ile doldur
+            if (typeof INITIAL === "object") {
+                Object.entries(INITIAL).forEach(([pid, arr]) => {
+                    const el = document.getElementById('list-' + pid);
+                    if (!el) return;
+                    (arr || []).forEach(x => {
+                        const d = document.createElement('div');
+                        d.className = 'thumb border rounded';
+                        d.dataset.imageId = String(x.id);
+                        d.style.cssText = "width:110px;height:80px;overflow:hidden;cursor:grab;display:flex;align-items:center;justify-content:center;background:#fafafa";
+                        d.innerHTML = `<img src="${x.url}" style="max-width:100%;max-height:100%;">`;
+                        el.appendChild(d);
+                    });
+                });
+            }
+
+            // 2) Havuz (klonlanabilir) — aynı görseli birden fazla gruba eklemek için
+            const pool = document.getElementById('list-pool');
+            if (pool) {
+                new Sortable(pool, {
+                    group: {name: 'images', pull: 'clone', put: false},
+                    animation: 120,
+                    sort: false
+                });
+            }
+
+            // 3) Tüm grup listeleri
+            document.querySelectorAll('[data-list-id]').forEach(el => {
+                if (el.dataset.listId === 'pool') return;
+                new Sortable(el, {
+                    group: {name: 'images', pull: true, put: true},
+                    animation: 120
+                });
+            });
+
+            // 4) Kaydet
+            const saveBtn = document.getElementById('saveBtn');
+            if (saveBtn) {
+                saveBtn.addEventListener('click', async function () {
+                    const lists = {};
+                    document.querySelectorAll('[data-list-id]').forEach(list => {
+                        const id = list.dataset.listId;
+                        if (id === 'pool') return;
+                        const ids = Array.from(list.querySelectorAll('.thumb')).map(x => x.dataset.imageId);
+                        lists[id] = ids;
+                    });
+                    const csrftoken = (document.cookie.match('(^|;)\\s*csrftoken\\s*=\\s*([^;]+)') || []).pop() || '';
+                    const resp = await fetch("{% url 'backoffice:manager_upload_save' %}", {
+                        method: "POST",
+                        headers: {"X-CSRFToken": csrftoken, "Content-Type": "application/json"},
+                        body: JSON.stringify({lists})
+                    });
+                    const data = await resp.json().catch(() => ({}));
+                    const el = document.getElementById('saveResult');
+                    if (data.ok) {
+                        el.textContent = "Kaydedildi.";
+                        el.style.color = "green";
+                    } else {
+                        el.textContent = "Kaydetme başarısız.";
+                        el.style.color = "red";
+                    }
+                    setTimeout(() => {
+                        el.textContent = "";
+                    }, 4000);
+                });
+            }
+        });
+    </script>
+    <script>
+        // --- Sortable.js'i yükle (static varsa onu, yoksa CDN) ---
+        (function ensureSortable(cb) {
+            function ok() {
+                cb && cb();
+            }
+
+            if (window.Sortable) return ok();
+            var s = document.createElement('script');
+            s.src = "{% static 'assets/vendor/custom/Sortable.min.js' %}";
+            s.onload = ok;
+            s.onerror = function () {
+                var cdn = document.createElement('script');
+                cdn.src = "https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js";
+                cdn.onload = ok;
+                document.head.appendChild(cdn);
+            };
+            document.head.appendChild(s);
+        })(function init() {
+
+            // --- küçük yardımcılar ---
+            function csrftoken() {
+                return (document.cookie.match('(^|;)\\s*csrftoken\\s*=\\s*([^;]+)') || []).pop() || '';
+            }
+
+            function updateAssignedBadge(imageId) {
+                const pool = document.getElementById('list-pool');
+                const poolThumb = pool?.querySelector('.thumb[data-image-id="' + imageId + '"]');
+                if (!poolThumb) return;
+                const inAnyGroup = Array.from(document.querySelectorAll('[data-list-id]'))
+                    .filter(el => el.dataset.listId !== 'pool')
+                    .some(list => list.querySelector('.thumb[data-image-id="' + imageId + '"]'));
+                poolThumb.classList.toggle('assigned', inAnyGroup);
+            }
+
+            function makeThumb(url, id) {
+                const d = document.createElement('div');
+                d.className = 'thumb border rounded';
+                d.dataset.imageId = String(id);
+                d.style.cssText = "width:110px;height:80px;overflow:hidden;cursor:grab;display:flex;align-items:center;justify-content:center;background:#fafafa";
+                d.innerHTML = `<img src="${url}" style="max-width:100%;max-height:100%;">`;
+                return d;
+            }
+
+            // --- 1) Sağ sütunları INITIAL ile doldur ---
+            if (typeof INITIAL === "object") {
+                Object.entries(INITIAL).forEach(([pid, arr]) => {
+                    const el = document.getElementById('list-' + pid);
+                    if (!el) return;
+                    (arr || []).forEach(x => el.appendChild(makeThumb(x.url, x.id)));
+                });
+            }
+
+            // --- 2) Havuz: hem klon kaynağı, hem geri alım noktası ---
+            const pool = document.getElementById('list-pool');
+            if (pool) {
+                new Sortable(pool, {
+                    group: {name: 'images', pull: 'clone', put: true}, // geri alımı açtık
+                    animation: 120,
+                    sort: false,
+                    onAdd: function (evt) {
+                        const el = evt.item;
+                        const id = el.dataset.imageId;
+                        // Havuzda bu id'den zaten varsa, getirilen kopyayı sil → sadece gruptan kaldırılmış olsun
+                        const dup = pool.querySelectorAll('.thumb[data-image-id="' + id + '"]');
+                        if (dup.length > 1) el.remove();
+                        // Rozeti güncelle
+                        updateAssignedBadge(id);
+                    }
+                });
+            }
+
+            // --- 3) Tüm grup listeleri: ekleme/çıkarma olaylarında rozet güncelle ---
+            function wireList(el) {
+                new Sortable(el, {
+                    group: {name: 'images', pull: true, put: true},
+                    animation: 120,
+                    onAdd: function (evt) {
+                        updateAssignedBadge(evt.item.dataset.imageId);
+                        const poolThumb = document.querySelector('#list-pool .thumb[data-image-id="' + evt.item.dataset.imageId + '"]');
+                        if (poolThumb) {
+                            poolThumb.classList.add('recent');
+                            setTimeout(() => poolThumb.classList.remove('recent'), 800);
+                        }
+                    },
+                    onRemove: function (evt) {
+                        if (evt.item?.dataset?.imageId) updateAssignedBadge(evt.item.dataset.imageId);
+                    }
+                });
+            }
+
+            document.querySelectorAll('[data-list-id]').forEach(el => {
+                if (el.dataset.listId !== 'pool') wireList(el);
+            });
+
+            // --- 4) Kaydet ---
+            document.getElementById('saveBtn')?.addEventListener('click', async function () {
+                const lists = {};
+                document.querySelectorAll('[data-list-id]').forEach(list => {
+                    const id = list.dataset.listId;
+                    if (id === 'pool') return;
+                    lists[id] = Array.from(list.querySelectorAll('.thumb')).map(x => x.dataset.imageId);
+                });
+                const resp = await fetch("{% url 'backoffice:manager_upload_save' %}", {
+                    method: "POST",
+                    headers: {"X-CSRFToken": csrftoken(), "Content-Type": "application/json"},
+                    body: JSON.stringify({lists})
+                });
+                const data = await resp.json().catch(() => ({}));
+                const el = document.getElementById('saveResult');
+                if (data.ok) {
+                    el.textContent = "Kaydedildi.";
+                    el.style.color = "green";
+                } else {
+                    el.textContent = "Kaydetme başarısız.";
+                    el.style.color = "red";
+                }
+                setTimeout(() => el.textContent = "", 4000);
+            });
+
+            // --- 5) Çoklu yükleme (chunk'lı) ---
+            document.getElementById('uploadForm')?.addEventListener('submit', async function (e) {
+                e.preventDefault();
+                const input = document.getElementById('files');
+                const files = Array.from(input.files);
+                if (!files.length) return;
+                const chunkSize = 25;
+                const msg = document.getElementById('uploadMsg');
+                let createdTotal = 0;
+                for (let i = 0; i < files.length; i += chunkSize) {
+                    const fd = new FormData();
+                    files.slice(i, i + chunkSize).forEach(f => fd.append('files', f));
+                    const resp = await fetch("{% url 'backoffice:manager_upload_do_upload' %}", {
+                        method: "POST", headers: {"X-CSRFToken": csrftoken()}, body: fd
+                    });
+                    const data = await resp.json().catch(() => ({}));
+                    if (!resp.ok || !data.ok) {
+                        msg.textContent = `Yükleme başarısız (parça ${i + 1}–${Math.min(i + chunkSize, files.length)}).`;
+                        msg.className = "text-danger";
+                        return;
+                    }
+                    createdTotal += (data.created || 0);
+                    msg.textContent = `Yüklendi: ${createdTotal}/${files.length}`;
+                    msg.className = "text-success";
+                }
+                setTimeout(() => location.reload(), 800);
+            });
+
+            // --- 6) Yeni grup oluştur (ve yeni listeyi kablolayalım) ---
+            document.getElementById("createPortfolioBtn")?.addEventListener("click", async function () {
+                const nameInput = document.getElementById("newPortfolioName");
+                const resultEl = document.getElementById("createResult");
+                const name = nameInput.value.trim();
+                if (!name) {
+                    resultEl.textContent = "İsim giriniz.";
+                    resultEl.className = "text-danger";
+                    resultEl.style.display = "inline";
+                    return;
+                }
+                resultEl.textContent = "Oluşturuluyor...";
+                resultEl.className = "text-muted";
+                resultEl.style.display = "inline";
+                try {
+                    const resp = await fetch("{% url 'backoffice:manager_upload_create_portfolio' %}", {
+                        method: "POST",
+                        headers: {"X-CSRFToken": csrftoken(), "Content-Type": "application/x-www-form-urlencoded"},
+                        body: "name=" + encodeURIComponent(name)
+                    });
+                    const data = await resp.json().catch(() => ({}));
+                    if (!resp.ok || !data.ok) throw new Error(data.error || "Hata oluştu");
+                    resultEl.textContent = `✔ ${data.name} eklendi (ID: ${data.id})`;
+                    resultEl.className = "text-success";
+                    nameInput.value = "";
+                    const container = document.querySelector(".col-lg-7");
+                    const div = document.createElement("div");
+                    div.className = "border rounded-3 mb-3";
+                    div.innerHTML = `
+          <div class="d-flex align-items-center justify-content-between p-2 bg-light border-bottom">
+            <strong>${data.name}</strong><small class="text-muted">ID: ${data.id}</small>
+          </div>
+          <div id="list-${data.id}" class="p-2 d-flex flex-wrap gap-2" data-list-id="${data.id}"></div>`;
+                    container.insertBefore(div, container.querySelector(".d-flex.gap-2.mt-3"));
+                    wireList(div.querySelector('[data-list-id]')); // yeni listeye de Sortable bağla
+                } catch (err) {
+                    resultEl.textContent = "❌ " + err.message;
+                    resultEl.className = "text-danger";
+                    resultEl.style.display = "inline";
+                }
+            });
+
+            // --- 7) Havuz arama/temizle (opsiyonel) ---
+            document.getElementById('poolSearch')?.addEventListener('input', function () {
+                const q = (this.value || '').toLowerCase().trim();
+                document.querySelectorAll('#list-pool .thumb').forEach(t => {
+                    const title = (t.dataset.title || '').toLowerCase();
+                    t.style.display = (!q || title.includes(q)) ? '' : 'none';
+                });
+            });
+            document.getElementById('clearFilter')?.addEventListener('click', function () {
+                const s = document.getElementById('poolSearch');
+                s.value = '';
+                s.dispatchEvent(new Event('input'));
+            });
+        });
+    </script>
+
+
+{% endblock %}

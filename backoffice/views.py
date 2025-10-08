@@ -1,135 +1,226 @@
-from django.contrib.auth import authenticate, login, logout, get_user_model
-from django.contrib.admin.views.decorators import staff_member_required
-from django.shortcuts import render, redirect
-from django.views.decorators.http import require_http_methods
-from django.contrib import messages
-from django.core.files.storage import default_storage
-from django.core.files.base import ContentFile
+# backoffice/views.py
+from __future__ import annotations
 
-from .forms import ManagerLoginForm
-from main.models import ContactMessage  # ContactMessage ana app’indeyse
+import json
+from typing import List
+
+from django.contrib import messages as dj_messages
+from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth import authenticate, login, logout, get_user_model
-from django.shortcuts import render, redirect
-from django.contrib import messages
-from django.views.decorators.http import require_http_methods
+from django.core.paginator import Paginator
+from django.db import transaction
+from django.http import (
+    HttpRequest,
+    HttpResponse,
+    HttpResponseBadRequest,
+    JsonResponse,
+)
+from django.shortcuts import redirect, render
+from django.utils.text import slugify
+from django.views.decorators.http import require_GET, require_http_methods, require_POST
+
+# Projenizde varsa iletişim mesajları için (yoksa bu importu silebilirsiniz)
+try:
+    from main.models import ContactMessage
+except Exception:  # main app yoksa
+    ContactMessage = None  # type: ignore
+
+# Bu projede artık modeller backoffice içindeyse:
+from backoffice.models import Portfolio, ImageAsset, PortfolioImage
 
 User = get_user_model()
 
 
+# ------------------------------------------------------------------------------
+# Kimlik / Oturum
+# ------------------------------------------------------------------------------
+
 @require_http_methods(["GET", "POST"])
-def manager_login(request):
+def admin_login(request: HttpRequest) -> HttpResponse:
+    """
+    Basit yönetici girişi.
+    """
     if request.user.is_authenticated and request.user.is_staff:
         return redirect("backoffice:manager_dashboard")
 
+    ctx = {"error": None}
     if request.method == "POST":
-        email = request.POST.get("email", "").strip()
-        password = request.POST.get("password", "")
+        username = (request.POST.get("username") or "").strip()
+        password = request.POST.get("password") or ""
+        user = authenticate(request, username=username, password=password)
+        if user and user.is_active and user.is_staff:
+            login(request, user)
+            return redirect("backoffice:manager_dashboard")
+        ctx["error"] = "Kullanıcı adı veya parola hatalı."
 
-        # email’den staff kullanıcıyı bul
-        user = User.objects.filter(email__iexact=email, is_active=True, is_staff=True).first()
-        if user:
-            authed = authenticate(request, username=user.get_username(), password=password)
-            if authed is not None:
-                login(request, authed)
-                return redirect("backoffice:manager_dashboard")
-
-        messages.error(request, "E-posta veya şifre hatalı.")
-
-    return render(request, "backoffice/login.html")
+    return render(request, "backoffice/login.html", ctx)
 
 
-def manager_logout(request):
+@staff_member_required
+def admin_logout(request: HttpRequest) -> HttpResponse:
     logout(request)
-    return redirect("backoffice:manager_login")
+    return redirect("backoffice:admin_login")
+
+
+# ------------------------------------------------------------------------------
+# Panel / Mesajlar (mevcut sayfalarınızı kullansın diye basit görünümler ekli)
+# ------------------------------------------------------------------------------
+
+@staff_member_required
+def manager_dashboard(request: HttpRequest) -> HttpResponse:
+    """
+    Yönetim ana sayfası.
+    """
+    return render(request, "backoffice/dashboard.html")
 
 
 @staff_member_required
-def manager_dashboard(request):
-    unread_count = ContactMessage.objects.filter(is_read=False).count()
-    return render(request, "backoffice/dashboard.html", {"unread_count": unread_count})
-
-
-# backoffice/views.py
-
-from django.core.paginator import Paginator
-
-
-@staff_member_required
-def manager_dashboard(request):
-    from main.models import ContactMessage
-    unread_count = ContactMessage.objects.filter(is_read=False).count()
-    total_count = ContactMessage.objects.count()
-    return render(request, "backoffice/dashboard.html", {
-        "unread_count": unread_count,
-        "total_count": total_count,
-    })
-
-
-from django.contrib.admin.views.decorators import staff_member_required
-from django.shortcuts import render, redirect
-from django.core.paginator import Paginator
-
-from main.models import ContactMessage  # modelin burada
-
-
-@staff_member_required
-def manager_dashboard(request):
-    unread_count = ContactMessage.objects.filter(is_read=False).count()
-    total_count = ContactMessage.objects.count()
-    return render(request, "backoffice/dashboard.html", {
-        "unread_count": unread_count,
-        "total_count": total_count,
-    })
-
-
-@staff_member_required
-def manager_messages(request):
-    q = request.GET.get("q", "").strip()
-    status = request.GET.get("status", "all")  # all | unread | read
+def messages_list(request: HttpRequest) -> HttpResponse:
+    """
+    İletişim mesajları listesi (varsa).
+    """
+    if ContactMessage is None:
+        # main app yoksa boş sayfa bas
+        return render(request, "backoffice/messages.html", {"page_obj": None})
 
     qs = ContactMessage.objects.all().order_by("-created_at")
-    if q:
-        qs = qs.filter(message__icontains=q)
-
-    if status == "unread":
-        qs = qs.filter(is_read=False)
-    elif status == "read":
-        qs = qs.filter(is_read=True)
-
-    # Hızlı işaretleme
-    mark_read_id = request.GET.get("okundu")
-    mark_unread_id = request.GET.get("okunmadi")
-    if mark_read_id:
-        ContactMessage.objects.filter(id=mark_read_id).update(is_read=True)
-        return redirect(f"{request.path}?status={status}&q={q}")
-    if mark_unread_id:
-        ContactMessage.objects.filter(id=mark_unread_id).update(is_read=False)
-        return redirect(f"{request.path}?status={status}&q={q}")
-
-    counts = {
-        "all": ContactMessage.objects.count(),
-        "unread": ContactMessage.objects.filter(is_read=False).count(),
-        "read": ContactMessage.objects.filter(is_read=True).count(),
-    }
-
     paginator = Paginator(qs, 20)
-    page_obj = paginator.get_page(request.GET.get("page"))
+    page_obj = paginator.get_page(request.GET.get("page") or 1)
+    return render(request, "backoffice/messages.html", {"page_obj": page_obj})
 
-    return render(request, "backoffice/messages.html", {
-        "q": q,
-        "status": status,
-        "counts": counts,
-        "page_obj": page_obj,
-    })
+
+# ------------------------------------------------------------------------------
+# YENİ: Grup bazlı yönetim (her grup kartında yükle/sırala/kaldır)
+# ------------------------------------------------------------------------------
+
+@staff_member_required
+def group_manager(request: HttpRequest) -> HttpResponse:
+    """
+    Tüm aktif portföyleri listeler; her birinde:
+      - Dosya seç + Yükle (doğrudan o gruba)
+      - Sürükle-bırak ile sıra düzenleme
+      - × ile bu gruptan kaldırma
+    """
+    portfolios = (
+        Portfolio.objects.filter(is_active=True)
+        .order_by("order", "name")
+        .prefetch_related("portfolioimage_set__image")
+    )
+    return render(request, "backoffice/manager_groups.html", {"portfolios": portfolios})
 
 
 @staff_member_required
-@require_http_methods(["GET", "POST"])
-def manager_upload(request):
-    uploaded_url = None
-    if request.method == "POST" and request.FILES.get("file"):
-        f = request.FILES["file"]
-        path = default_storage.save(f"manager_uploads/{f.name}", ContentFile(f.read()))
-        uploaded_url = default_storage.url(path)
-        messages.success(request, "Dosya yüklendi.")
-    return render(request, "backoffice/upload.html", {"uploaded_url": uploaded_url})
+@require_POST
+def group_create_portfolio(request: HttpRequest) -> JsonResponse:
+    """
+    Yeni grup oluştur (varsa aktif et ve adını güncelle).
+    """
+    name = (request.POST.get("name") or "").strip()
+    if not name:
+        return JsonResponse({"ok": False, "error": "İsim gerekli."}, status=400)
+
+    slug = slugify(name)
+    p, created = Portfolio.objects.get_or_create(
+        slug=slug, defaults={"name": name, "order": 0, "is_active": True}
+    )
+    if not created:
+        changed = False
+        if not p.is_active:
+            p.is_active = True
+            changed = True
+        if p.name != name:
+            p.name = name
+            changed = True
+        if changed:
+            p.save()
+
+    return JsonResponse({"ok": True, "id": p.id, "name": p.name, "created": created})
+
+
+@staff_member_required
+@require_POST
+def group_upload(request: HttpRequest, pid: int) -> JsonResponse:
+    """
+    Seçilen dosyaları doğrudan 'pid' grubuna ekler.
+    - Her dosya için ImageAsset oluşturur,
+    - PortfolioImage ile bu gruba bağlar (sona ekler).
+    """
+    files = request.FILES.getlist("files")
+    if not files:
+        return JsonResponse({"ok": False, "error": "Dosya seçilmedi."}, status=400)
+
+    try:
+        portfolio = Portfolio.objects.get(id=pid, is_active=True)
+    except Portfolio.DoesNotExist:
+        return JsonResponse({"ok": False, "error": "Grup bulunamadı."}, status=404)
+
+    # Sona eklemek için mevcut en büyük order
+    last_order = (
+            PortfolioImage.objects.filter(portfolio=portfolio)
+            .order_by("-order")
+            .values_list("order", flat=True)
+            .first()
+            or 0
+    )
+
+    created, linked = 0, 0
+    for f in files:
+        asset = ImageAsset(title=f.name.rsplit(".", 1)[0])
+        asset.image.save(f.name, f, save=True)
+        created += 1
+
+        last_order += 1
+        PortfolioImage.objects.create(
+            portfolio=portfolio, image=asset, order=last_order
+        )
+        linked += 1
+
+    return JsonResponse({"ok": True, "created": created, "linked": linked})
+
+
+@staff_member_required
+@require_POST
+@transaction.atomic
+def group_save_order(request: HttpRequest, pid: int) -> JsonResponse:
+    """
+    Sadece ilgili grubun (pid) sıralamasını günceller.
+    request.POST['order'] = "12,7,5,9" gibi image_id dizisi bekler.
+    """
+    raw = request.POST.get("order") or ""
+    try:
+        ids: List[int] = [int(x) for x in raw.split(",") if x.strip()]
+    except Exception:
+        return HttpResponseBadRequest("Geçersiz order verisi")
+
+    # Tamamen temizleme
+    if not ids:
+        PortfolioImage.objects.filter(portfolio_id=pid).delete()
+        return JsonResponse({"ok": True, "cleared": True})
+
+    # Temizle ve yeni sırayla ekle
+    PortfolioImage.objects.filter(portfolio_id=pid).delete()
+    bulk = [
+        PortfolioImage(portfolio_id=pid, image_id=image_id, order=idx)
+        for idx, image_id in enumerate(ids)
+    ]
+    PortfolioImage.objects.bulk_create(bulk, batch_size=1000)
+    return JsonResponse({"ok": True, "count": len(bulk)})
+
+
+@staff_member_required
+@require_POST
+def group_remove_image(request: HttpRequest, pid: int, image_id: int) -> JsonResponse:
+    """
+    Sadece bu portföy ile görsel arasındaki bağı kaldırır (dosyayı silmez).
+    """
+    PortfolioImage.objects.filter(portfolio_id=pid, image_id=image_id).delete()
+    return JsonResponse({"ok": True})
+
+
+# ------------------------------------------------------------------------------
+# (Opsiyonel) Basit ping/sağlık kontrolü
+# ------------------------------------------------------------------------------
+
+@require_GET
+def ping(request: HttpRequest) -> JsonResponse:
+    return JsonResponse({"ok": True})
