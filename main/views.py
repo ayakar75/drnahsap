@@ -5,6 +5,7 @@ from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from .models import ContactMessage
 from django.http import HttpRequest, HttpResponse
+from backoffice.models import Showcase, ShowcaseItem, Portfolio, PortfolioImage
 
 
 def projects_main(request):
@@ -24,7 +25,19 @@ def about(request: HttpRequest) -> HttpResponse:
     return render(request, "main/about.html")
 
 
+# main/views.py
+from django.shortcuts import render
+from django.http import HttpRequest, HttpResponse
+from backoffice.models import Showcase, ShowcaseItem, PortfolioImage
+
+# main/views.py
+from django.shortcuts import render, get_object_or_404
+from django.http import HttpRequest, HttpResponse, JsonResponse
+from backoffice.models import Showcase, ShowcaseItem, PortfolioImage
+
+
 def services(request: HttpRequest) -> HttpResponse:
+    # mevcut sabit içeriklerin (service_cards, process_steps, faqs) sende nasılsa öyle kalsın
     service_cards = [
         {"title": "Mutfak Dolabı", "icon": "bi-house"},
         {"title": "Banyo Dolabı", "icon": "bi-droplet"},
@@ -39,40 +52,66 @@ def services(request: HttpRequest) -> HttpResponse:
         {"title": "Tadilat & Restorasyon", "icon": "bi-recycle"},
         {"title": "Özel Tasarım Projeler", "icon": "bi-stars"},
     ]
-
     process_steps = [
-        "Keşif & Ölçü Alma",
-        "Tasarım & 3D Görselleştirme",
-        "Malzeme Seçimi & Teklif",
-        "Üretim",
-        "Boya/Vernik",
-        "Montaj & Teslimat",
-        "Garanti & Bakım",
+        "Keşif & Ölçü Alma", "Tasarım & 3D Görselleştirme", "Malzeme Seçimi & Teklif",
+        "Üretim", "Boya/Vernik", "Montaj & Teslimat", "Garanti & Bakım",
     ]
-
     faqs = [
-        {"q": "Teslim süresi nedir?",
-         "a": "Proje kapsamına göre 10–30 iş günü arasında değişir."},
+        {"q": "Teslim süresi nedir?", "a": "Proje kapsamına göre 10–30 iş günü arasında değişir."},
         {"q": "Keşif/ölçü alma ücretli mi?",
-         "a": "Merkez bölge için ücretsiz; uzak lokasyonlarda yol ücreti talep edilebilir."},
-        {"q": "Garanti var mı?",
-         "a": "Montaj ve işçilik için 2 yıl; donanım için üretici garantisi geçerlidir."},
-        {"q": "Ödeme planı nasıl?",
-         "a": "%40 kapora (üretim başlangıcı), kalan tutar montaj sonrası teslimde."},
-        {"q": "Küçük tadilat yapıyor musunuz?",
-         "a": "Evet; kapak ayarı, menteşe değişimi, lake rötuş gibi işler için randevu oluşturuyoruz."},
-        {"q": "Malzeme seçimine nasıl karar veriyoruz?",
-         "a": "Kullanım alanı (mutfak/banyo), bütçe ve beklentiye göre birlikte karar veriyoruz."},
+         "a": "Merkez bölge için ücretsiz; uzak lokasyonlarda yol ücreti olabilir."},
+        {"q": "Garanti var mı?", "a": "Montaj ve işçilik 2 yıl; donanım üretici garantisi geçerlidir."},
     ]
 
-    portfolio_images = [1, 2, 3, 4, 5, 6]
+    # ÖNEMLİ: Artık .first() kullanmıyoruz; TÜM aktif vitrinleri listeliyoruz
+    showcases_qs = Showcase.objects.filter(is_active=True).order_by("order", "id")
+
+    # UI’da göstermek için sadece id, ad ve toplam görsel sayısı (opsiyonel)
+    showcases = []
+    for sc in showcases_qs:
+        # vitrindeki portföyleri bul
+        port_ids = list(
+            ShowcaseItem.objects.filter(showcase=sc).values_list("portfolio_id", flat=True)
+        )
+        total = PortfolioImage.objects.filter(portfolio_id__in=port_ids).count() if port_ids else 0
+        showcases.append({"id": sc.id, "name": sc.name, "total": total})
 
     return render(request, "main/services.html", {
         "service_cards": service_cards,
         "process_steps": process_steps,
         "faqs": faqs,
-        "portfolio_images": portfolio_images,
+        "showcases": showcases,  # ← birden çok vitrin
     })
+
+
+# AJAX: Bir vitrindeki TÜM portföylerin görsellerini getir (sayfa yenilemeden)
+def services_showcase_images(request: HttpRequest, sid: int) -> JsonResponse:
+    per = min(max(int(request.GET.get("per", 12)), 1), 60)
+    page = max(int(request.GET.get("page", 1)), 1)
+
+    sc = get_object_or_404(Showcase, pk=sid, is_active=True)
+    port_ids = list(
+        ShowcaseItem.objects.filter(showcase=sc).values_list("portfolio_id", flat=True)
+    )
+
+    qs = PortfolioImage.objects.filter(portfolio_id__in=port_ids).select_related("image").order_by(
+        "portfolio__order", "order", "id"
+    )
+
+    total = qs.count()
+    start, end = (page - 1) * per, (page - 1) * per + per
+    chunk = qs[start:end]
+
+    data = {
+        "ok": True,
+        "showcase": {"id": sc.id, "name": sc.name},
+        "page": page,
+        "per": per,
+        "total": total,
+        "has_more": end < total,
+        "images": [{"url": pi.image.image.url, "title": pi.image.title or sc.name} for pi in chunk],
+    }
+    return JsonResponse(data)
 
 
 def blog(request: HttpRequest) -> HttpResponse:

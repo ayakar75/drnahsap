@@ -63,3 +63,37 @@ class PortfolioImage(models.Model):
         return f"{self.portfolio} · {self.image}"
 
 
+# === vitrinde kullanılacak koleksiyonlar ===
+class Showcase(models.Model):
+    name = models.CharField(max_length=120, unique=True)  # örn: "Masa ve Sandalye Portföyü"
+    slug = models.SlugField(max_length=140, unique=True, blank=True)
+    is_active = models.BooleanField(default=True)
+    order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        db_table = "service_showcase"
+        ordering = ["order", "name"]
+
+    def save(self, *args, **kwargs):
+        from django.utils.text import slugify
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.name
+
+
+class ShowcaseItem(models.Model):
+    showcase = models.ForeignKey(Showcase, on_delete=models.CASCADE, related_name="items")
+    portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE)
+    order = models.PositiveIntegerField(default=0)  # vitrindeki sırası
+    limit = models.PositiveSmallIntegerField(null=True, blank=True)  # bu portföyden kaç görsel? (boş=hepsi)
+
+    class Meta:
+        db_table = "service_showcase_item"
+        unique_together = (("showcase", "portfolio"),)
+        ordering = ["showcase__order", "order", "id"]
+
+    def __str__(self):
+        return f"{self.showcase} · {self.portfolio}"

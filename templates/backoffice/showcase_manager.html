@@ -1,0 +1,241 @@
+{% extends "main/base.html" %}
+{% load static %}
+
+{% block body_class %}showcase-manager{% endblock %}
+{% block content %}
+
+    <div class="page-title dark-background"
+         style="background-image:url({% static 'assets/img/services/atolye.png' %});">
+        <div class="container position-relative">
+            <h1>Vitrin (Showcase) Yönetimi</h1>
+            <nav class="breadcrumbs">
+                <ol>
+                    <li><a href="{% url 'main:home' %}">Anasayfa</a></li>
+                    <li><a href="{% url 'backoffice:manager_dashboard' %}">Yönetim İşlemleri</a></li>
+                    <li class="current">Vitrin Yönetimi</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <section class="section">
+        <div class="container">
+            <div class="row g-3">
+                <!-- SOL: Vitrin listesi -->
+                <div class="col-lg-4">
+                    <div class="card">
+                        <div class="card-header">Vitrinler</div>
+                        <div class="card-body">
+                            <ul class="list-group mb-3" id="showcase-list">
+                                {% for s in showcases %}
+                                    <li class="list-group-item d-flex justify-content-between align-items-center {% if selected and selected.id == s.id %}active text-white{% endif %}">
+                                        <a class="stretched-link {% if selected and selected.id == s.id %}text-white{% endif %}"
+                                           href="{% url 'backoffice:showcase_manager' %}?sid={{ s.id }}">{{ s.name }}</a>
+                                        <span class="badge bg-{{ s.is_active|yesno:'success,secondary' }}">{{ s.is_active|yesno:'Aktif,Pasif' }}</span>
+                                    </li>
+                                {% empty %}
+                                    <li class="list-group-item text-muted">Henüz vitrin yok.</li>
+                                {% endfor %}
+                            </ul>
+
+                            <div class="input-group">
+                                <input id="newName" class="form-control" placeholder="Yeni vitrin adı">
+                                <button class="btn btn-outline-primary" id="createBtn">Ekle</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SAĞ: Seçili vitrin ayrıntı -->
+                <div class="col-lg-8">
+                    {% if selected %}
+                        <div class="card mb-3">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <div class="d-flex gap-2 align-items-center">
+                                    <input id="scName" class="form-control form-control-sm" value="{{ selected.name }}">
+                                    <div class="form-check ms-2">
+                                        <input class="form-check-input" type="checkbox" id="scActive"
+                                               {% if selected.is_active %}checked{% endif %}>
+                                        <label class="form-check-label" for="scActive">Aktif</label>
+                                    </div>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-sm btn-success" id="saveSc">Kaydet</button>
+                                    <button class="btn btn-sm btn-outline-danger" id="deleteSc">Sil</button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <!-- Portföy ekle -->
+                                <div class="row g-2 align-items-end mb-3">
+                                    <div class="col-md-8">
+                                        <label class="form-label">Portföy Ekle</label>
+                                        <select multiple class="form-select" id="addPortfolios" size="6">
+                                            {% for p in portfolios %}
+                                                <option value="{{ p.id }}">{{ p.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        <small class="text-muted">Ctrl/⌘ ile çoklu seçim.</small>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Varsayılan limit</label>
+                                        <input id="defaultLimit" type="number" class="form-control" min="0"
+                                               placeholder="örn. 8">
+                                        <button class="btn btn-primary w-100 mt-2" id="addBtn">Ekle</button>
+                                    </div>
+                                </div>
+
+                                <!-- İçerik listesi -->
+                                <div class="border rounded p-2">
+                                    <div id="items" class="d-flex flex-column gap-2" data-sid="{{ selected.id }}">
+                                        {% for it in selected.items.all|dictsort:"order" %}
+                                            <div class="item row g-2 align-items-center" data-item-id="{{ it.id }}">
+                                                <div class="col-6 col-md-6">
+                                                    <div class="p-2 border rounded bg-light">{{ it.portfolio.name }}</div>
+                                                </div>
+                                                <div class="col-3 col-md-3">
+                                                    <div class="input-group input-group-sm">
+                                                        <span class="input-group-text">Limit</span>
+                                                        <input type="number" class="form-control item-limit" min="0"
+                                                               placeholder="sınırsız"
+                                                               value="{{ it.limit|default_if_none:'' }}">
+                                                    </div>
+                                                </div>
+                                                <div class="col-3 col-md-3 text-end">
+                                                    <button class="btn btn-sm btn-outline-danger removeBtn">Kaldır
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        {% empty %}
+                                            <div class="text-muted p-2">Bu vitrinde portföy yok. Soldan ekleyin.</div>
+                                        {% endfor %}
+                                    </div>
+                                    <div class="text-end mt-2">
+                                        <button class="btn btn-success" id="saveOrder">Sırayı Kaydet</button>
+                                    </div>
+                                </div>
+
+                                <div id="result" class="small mt-2"></div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">Önce soldan bir vitrin seçin veya oluşturun.</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+    <script>
+        (function () {
+            function csrftoken() {
+                return (document.cookie.match('(^|;)\\s*csrftoken\\s*=\\s*([^;]+)') || []).pop() || '';
+            }
+
+            const selectedId = document.getElementById('items')?.dataset.sid;
+
+            // ——— vitrin oluştur
+            document.getElementById('createBtn')?.addEventListener('click', async () => {
+                const name = (document.getElementById('newName').value || '').trim();
+                if (!name) return;
+                const r = await fetch("{% url 'backoffice:showcase_create' %}", {
+                    method: 'POST',
+                    headers: {'X-CSRFToken': csrftoken(), 'Content-Type': 'application/x-www-form-urlencoded'},
+                    body: 'name=' + encodeURIComponent(name)
+                });
+                const d = await r.json().catch(() => ({}));
+                if (d.ok) location.href = "{% url 'backoffice:showcase_manager' %}?sid=" + d.id;
+            });
+
+            // ——— vitrin bilgilerini kaydet/sil
+            document.getElementById('saveSc')?.addEventListener('click', async () => {
+                const name = document.getElementById('scName').value.trim();
+                const is_active = document.getElementById('scActive').checked ? '1' : '0';
+                const r = await fetch("{% url 'backoffice:showcase_update' 0 %}".replace('/0/', '/' + selectedId + '/'), {
+                    method: 'POST',
+                    headers: {'X-CSRFToken': csrftoken(), 'Content-Type': 'application/x-www-form-urlencoded'},
+                    body: 'name=' + encodeURIComponent(name) + '&is_active=' + is_active
+                });
+                if ((await r.json()).ok) {
+                    location.reload();
+                }
+            });
+
+            document.getElementById('deleteSc')?.addEventListener('click', async () => {
+                if (!confirm('Bu vitrini silmek istiyor musunuz?')) return;
+                const r = await fetch("{% url 'backoffice:showcase_delete' 0 %}".replace('/0/', '/' + selectedId + '/'), {
+                    method: 'POST', headers: {'X-CSRFToken': csrftoken()}
+                });
+                if ((await r.json()).ok) {
+                    location.href = "{% url 'backoffice:showcase_manager' %}";
+                }
+            });
+
+            // ——— vitrine portföy ekle
+            document.getElementById('addBtn')?.addEventListener('click', async () => {
+                const sel = document.getElementById('addPortfolios');
+                const ids = Array.from(sel.selectedOptions).map(o => o.value).join(',');
+                if (!ids) return;
+                const def = document.getElementById('defaultLimit').value;
+                const r = await fetch("{% url 'backoffice:showcase_items_add' 0 %}".replace('/0/', '/' + selectedId + '/'), {
+                    method: 'POST',
+                    headers: {'X-CSRFToken': csrftoken(), 'Content-Type': 'application/x-www-form-urlencoded'},
+                    body: 'portfolio_ids=' + encodeURIComponent(ids) + '&default_limit=' + encodeURIComponent(def)
+                });
+                if ((await r.json()).ok) {
+                    location.reload();
+                }
+            });
+
+            // ——— liste: sürükle-bırak
+            if (document.getElementById('items')) {
+                new Sortable(document.getElementById('items'), {animation: 120, handle: '.item'});
+            }
+
+            // ——— sırayı kaydet
+            document.getElementById('saveOrder')?.addEventListener('click', async () => {
+                const ids = Array.from(document.querySelectorAll('#items .item')).map(x => x.dataset.itemId).join(',');
+                const r = await fetch("{% url 'backoffice:showcase_items_reorder' 0 %}".replace('/0/', '/' + selectedId + '/'), {
+                    method: 'POST',
+                    headers: {'X-CSRFToken': csrftoken(), 'Content-Type': 'application/x-www-form-urlencoded'},
+                    body: 'order=' + encodeURIComponent(ids)
+                });
+                const res = document.getElementById('result');
+                const d = await r.json().catch(() => ({}));
+                if (d.ok) {
+                    res.textContent = 'Sıra kaydedildi.';
+                    res.className = 'text-success small';
+                    setTimeout(() => res.textContent = '', 2000);
+                }
+            });
+
+            // ——— item limit düzenle / kaldır
+            document.querySelectorAll('.item-limit').forEach(inp => {
+                inp.addEventListener('change', async () => {
+                    const itemId = inp.closest('.item').dataset.itemId;
+                    const r = await fetch("{% url 'backoffice:showcase_item_update' 0 0 %}"
+                        .replace('/0/0/', '/' + selectedId + '/' + itemId + '/'), {
+                        method: 'POST',
+                        headers: {'X-CSRFToken': csrftoken(), 'Content-Type': 'application/x-www-form-urlencoded'},
+                        body: 'limit=' + encodeURIComponent(inp.value)
+                    });
+                });
+            });
+
+            document.querySelectorAll('.removeBtn').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const itemId = btn.closest('.item').dataset.itemId;
+                    const r = await fetch("{% url 'backoffice:showcase_item_remove' 0 0 %}"
+                        .replace('/0/0/', '/' + selectedId + '/' + itemId + '/'), {
+                        method: 'POST', headers: {'X-CSRFToken': csrftoken()}
+                    });
+                    const d = await r.json().catch(() => ({}));
+                    if (d.ok) {
+                        btn.closest('.item').remove();
+                    }
+                });
+            });
+
+        })();
+    </script>
+{% endblock %}

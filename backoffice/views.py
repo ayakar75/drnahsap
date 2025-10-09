@@ -224,3 +224,156 @@ def group_remove_image(request: HttpRequest, pid: int, image_id: int) -> JsonRes
 @require_GET
 def ping(request: HttpRequest) -> JsonResponse:
     return JsonResponse({"ok": True})
+
+
+# main/views.py
+from django.shortcuts import render, get_object_or_404
+from backoffice.models import Showcase, ShowcaseItem, PortfolioImage
+
+
+
+
+
+from backoffice.models import (
+    Portfolio, ImageAsset, PortfolioImage,  # zaten var
+    Showcase, ShowcaseItem,  # vitrin modelleri
+)
+
+
+# --------- SAYFA ----------
+@staff_member_required
+def showcase_manager(request):
+    """
+    Solda vitrin listesi, sağda seçilen vitrin içeriği:
+      - vitrin oluştur/yenile/sil
+      - portföy ekle/çıkar
+      - sürükle-bırak sırala
+      - limit düzenle
+    """
+    showcases = Showcase.objects.order_by("order", "name").prefetch_related(
+        "items__portfolio"
+    )
+    portfolios = Portfolio.objects.filter(is_active=True).order_by("order", "name")
+    # default ilk vitrin ya da query ile seçim
+    sid = request.GET.get("sid")
+    selected = None
+    if sid:
+        selected = next((s for s in showcases if str(s.id) == str(sid)), None)
+    if not selected and showcases:
+        selected = showcases[0]
+
+    return render(
+        request,
+        "backoffice/showcase_manager.html",
+        {"showcases": showcases, "selected": selected, "portfolios": portfolios},
+    )
+
+
+# --------- API: vitrinin CRUD'u ----------
+@staff_member_required
+@require_POST
+def showcase_create(request):
+    name = (request.POST.get("name") or "").strip()
+    if not name:
+        return JsonResponse({"ok": False, "error": "İsim gerekli."}, status=400)
+    s = Showcase.objects.create(name=name, slug=slugify(name), is_active=True, order=0)
+    return JsonResponse({"ok": True, "id": s.id, "name": s.name})
+
+
+@staff_member_required
+@require_POST
+def showcase_update(request, sid: int):
+    s = get_object_or_404(Showcase, id=sid)
+    if "name" in request.POST:
+        name = (request.POST.get("name") or "").strip()
+        if not name:
+            return JsonResponse({"ok": False, "error": "İsim gerekli."}, status=400)
+        s.name = name
+        s.slug = slugify(name) or s.slug
+    if "is_active" in request.POST:
+        s.is_active = request.POST.get("is_active") == "1"
+    if "order" in request.POST:
+        try:
+            s.order = int(request.POST.get("order"))
+        except Exception:
+            pass
+    s.save()
+    return JsonResponse({"ok": True})
+
+
+@staff_member_required
+@require_POST
+def showcase_delete(request, sid: int):
+    Showcase.objects.filter(id=sid).delete()
+    return JsonResponse({"ok": True})
+
+
+# --------- API: item işlemleri ----------
+@staff_member_required
+@require_POST
+def showcase_items_add(request, sid: int):
+    """
+    Bir vitrinin içine bir veya daha fazla portföy ekle.
+    POST: portfolio_ids=1,2,3  & default_limit=12
+    """
+    s = get_object_or_404(Showcase, id=sid)
+    ids_raw = request.POST.get("portfolio_ids") or ""
+    try:
+        pids = [int(x) for x in ids_raw.split(",") if x.strip()]
+    except Exception:
+        return HttpResponseBadRequest("Geçersiz portföy listesi")
+    default_limit = request.POST.get("default_limit")
+    limit = int(default_limit) if (default_limit or default_limit == "0") else None
+
+    last = (ShowcaseItem.objects.filter(showcase=s).order_by("-order").values_list("order", flat=True).first() or 0)
+    created = 0
+    for pid in pids:
+        if ShowcaseItem.objects.filter(showcase=s, portfolio_id=pid).exists():
+            continue
+        last += 1
+        ShowcaseItem.objects.create(showcase=s, portfolio_id=pid, limit=limit, order=last)
+        created += 1
+    return JsonResponse({"ok": True, "created": created})
+
+
+@staff_member_required
+@require_POST
+@transaction.atomic
+def showcase_items_reorder(request, sid: int):
+    """
+    POST: order=item_id1,item_id2,...
+    """
+    s = get_object_or_404(Showcase, id=sid)
+    raw = request.POST.get("order") or ""
+    try:
+        ids = [int(x) for x in raw.split(",") if x.strip()]
+    except Exception:
+        return HttpResponseBadRequest("Geçersiz order")
+
+    # sadece bu vitrine ait item'lar
+    items = list(ShowcaseItem.objects.filter(showcase=s, id__in=ids))
+    by_id = {i.id: i for i in items}
+    for idx, iid in enumerate(ids):
+        it = by_id.get(iid)
+        if it:
+            it.order = idx
+    ShowcaseItem.objects.bulk_update(items, ["order"])
+    return JsonResponse({"ok": True, "count": len(items)})
+
+
+@staff_member_required
+@require_POST
+def showcase_item_update(request, sid: int, item_id: int):
+    it = get_object_or_404(ShowcaseItem, showcase_id=sid, id=item_id)
+    if "limit" in request.POST:
+        val = request.POST.get("limit")
+        it.limit = int(val) if val != "" else None
+    it.save()
+    return JsonResponse({"ok": True})
+
+
+@staff_member_required
+@require_POST
+def showcase_item_remove(request, sid: int, item_id: int):
+    ShowcaseItem.objects.filter(showcase_id=sid, id=item_id).delete()
+    return JsonResponse({"ok": True})

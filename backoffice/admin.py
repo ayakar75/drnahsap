@@ -75,3 +75,28 @@ class PortfolioImageAdmin(admin.ModelAdmin):
     list_select_related = ("portfolio", "image")
     ordering = ("portfolio__order", "order", "id")
     autocomplete_fields = ("portfolio", "image")
+
+
+from .models import Showcase, ShowcaseItem  # en üste ekle
+
+
+class ShowcaseItemInline(admin.TabularInline):
+    model = ShowcaseItem
+    extra = 0
+    autocomplete_fields = ("portfolio",)
+    fields = ("portfolio", "limit", "order")
+    ordering = ("order", "id")
+
+
+@admin.register(Showcase)
+class ShowcaseAdmin(admin.ModelAdmin):
+    list_display = ("name", "order", "is_active", "items_count")
+    list_editable = ("order", "is_active")
+    prepopulated_fields = {"slug": ("name",)}
+    inlines = [ShowcaseItemInline]
+    ordering = ("order", "name")
+
+    def items_count(self, obj):
+        return obj.items.count()
+
+    items_count.short_description = "Portföy adedi"

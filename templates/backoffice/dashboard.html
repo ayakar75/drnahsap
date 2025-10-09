@@ -22,14 +22,13 @@
 
             <div class="row g-3">
                 <!-- Portföy / Gruplar -->
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <div class="card h-100">
                         <div class="card-body d-flex flex-column">
-                            <h5 class="card-title mb-2">Portföy Yönetimi</h5>
-                            <p class="text-muted mb-4">Gruplar oluşturun, o gruba dosya yükleyin, sıralayın ve
-                                kaldırın.</p>
+                            <h5 class="card-title mb-2">Portföy (Grup) Yönetimi</h5>
+                            <p class="text-muted mb-4">Gruplar oluşturun, dosya yükleyin, sıralayın ve kaldırın.</p>
                             <div class="mt-auto">
-                                <a href="{% url 'backoffice:group_manager' %}" class="btn btn-primary">
+                                <a href="{% url 'backoffice:group_manager' %}" class="btn btn-primary w-100">
                                     Grupları Aç
                                 </a>
                             </div>
@@ -37,13 +36,31 @@
                     </div>
                 </div>
 
+                <!-- Vitrin / Showcase -->
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title mb-2">Vitrin (Showcase) Yapılandır</h5>
+                            <p class="text-muted mb-4">
+                                “Masa ve Sandalye Portföyü” gibi başlıklar tanımlayın; içine
+                                Mutfak, Dış Mekân gibi portföyleri ekleyip kaç görsel gösterileceğini belirleyin.
+                            </p>
+                            <div class="mt-auto d-grid">
+                                <a href="{% url 'backoffice:showcase_manager' %}" class="btn btn-outline-primary">
+                                    Vitrin Yönetimine Git
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Mesajlar -->
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <div class="card h-100">
                         <div class="card-body d-flex flex-column">
                             <h5 class="card-title mb-2">İletişim Mesajları</h5>
                             <p class="text-muted mb-4">Ziyaretçilerin gönderdiği iletişim formlarını görüntüleyin.</p>
-                            <div class="mt-auto">
+                            <div class="mt-auto d-grid">
                                 <a href="{% url 'backoffice:messages_list' %}" class="btn btn-outline-secondary">
                                     Mesajları Gör
                                 </a>
@@ -55,9 +72,14 @@
 
             <hr class="my-4">
 
-            <div class="d-flex gap-2">
-                <a href="{% url 'main:home' %}" class="btn btn-light">Siteye Git</a>
-                <a href="{% url 'backoffice:admin_logout' %}" class="btn btn-outline-danger">Çıkış Yap</a>
+            <div class="row g-3">
+                <div class="col-md-6 d-grid">
+                    <!-- Servis sayfasındaki vitrini canlı gör -->
+                    <a href="{% url 'main:services' %}" class="btn btn-light">Servis Sayfasını Önizle</a>
+                </div>
+                <div class="col-md-6 d-grid">
+                    <a href="{% url 'backoffice:admin_logout' %}" class="btn btn-outline-danger">Çıkış Yap</a>
+                </div>
             </div>
 
         </div>
