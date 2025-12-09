@@ -1,4 +1,3 @@
-# backoffice/views.py
 from __future__ import annotations
 
 import json
@@ -15,18 +14,18 @@ from django.http import (
     HttpResponseBadRequest,
     JsonResponse,
 )
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render, get_object_or_404
 from django.utils.text import slugify
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
 # Projenizde varsa iletişim mesajları için (yoksa bu importu silebilirsiniz)
 try:
     from main.models import ContactMessage
-except Exception:  # main app yoksa
+except Exception:
     ContactMessage = None  # type: ignore
 
 # Bu projede artık modeller backoffice içindeyse:
-from backoffice.models import Portfolio, ImageAsset, PortfolioImage
+from backoffice.models import Portfolio, ImageAsset, PortfolioImage, Showcase, ShowcaseItem
 
 User = get_user_model()
 
@@ -40,7 +39,7 @@ def admin_login(request: HttpRequest) -> HttpResponse:
     """
     Basit yönetici girişi.
     """
-    if request.user.is_authenticated and request.user.is_staff:
+    if request.user.is_authenticated:
         return redirect("backoffice:manager_dashboard")
 
     ctx = {"error": None}
@@ -48,7 +47,7 @@ def admin_login(request: HttpRequest) -> HttpResponse:
         username = (request.POST.get("username") or "").strip()
         password = request.POST.get("password") or ""
         user = authenticate(request, username=username, password=password)
-        if user and user.is_active and user.is_staff:
+        if user and user.is_active:
             login(request, user)
             return redirect("backoffice:manager_dashboard")
         ctx["error"] = "Kullanıcı adı veya parola hatalı."
@@ -90,16 +89,13 @@ def messages_list(request: HttpRequest) -> HttpResponse:
 
 
 # ------------------------------------------------------------------------------
-# YENİ: Grup bazlı yönetim (her grup kartında yükle/sırala/kaldır)
+# Grup Bazlı Yönetim (Portföy ve Görsel Yönetimi)
 # ------------------------------------------------------------------------------
 
 @staff_member_required
 def group_manager(request: HttpRequest) -> HttpResponse:
     """
-    Tüm aktif portföyleri listeler; her birinde:
-      - Dosya seç + Yükle (doğrudan o gruba)
-      - Sürükle-bırak ile sıra düzenleme
-      - × ile bu gruptan kaldırma
+    Tüm aktif portföyleri listeler; her birinde görsel yönetimi.
     """
     portfolios = (
         Portfolio.objects.filter(is_active=True)
@@ -113,7 +109,7 @@ def group_manager(request: HttpRequest) -> HttpResponse:
 @require_POST
 def group_create_portfolio(request: HttpRequest) -> JsonResponse:
     """
-    Yeni grup oluştur (varsa aktif et ve adını güncelle).
+    Yeni portföy grubu oluştur.
     """
     name = (request.POST.get("name") or "").strip()
     if not name:
@@ -141,9 +137,7 @@ def group_create_portfolio(request: HttpRequest) -> JsonResponse:
 @require_POST
 def group_upload(request: HttpRequest, pid: int) -> JsonResponse:
     """
-    Seçilen dosyaları doğrudan 'pid' grubuna ekler.
-    - Her dosya için ImageAsset oluşturur,
-    - PortfolioImage ile bu gruba bağlar (sona ekler).
+    Seçilen dosyaları 'pid' portföy grubuna ekler.
     """
     files = request.FILES.getlist("files")
     if not files:
@@ -154,7 +148,6 @@ def group_upload(request: HttpRequest, pid: int) -> JsonResponse:
     except Portfolio.DoesNotExist:
         return JsonResponse({"ok": False, "error": "Grup bulunamadı."}, status=404)
 
-    # Sona eklemek için mevcut en büyük order
     last_order = (
             PortfolioImage.objects.filter(portfolio=portfolio)
             .order_by("-order")
@@ -183,8 +176,7 @@ def group_upload(request: HttpRequest, pid: int) -> JsonResponse:
 @transaction.atomic
 def group_save_order(request: HttpRequest, pid: int) -> JsonResponse:
     """
-    Sadece ilgili grubun (pid) sıralamasını günceller.
-    request.POST['order'] = "12,7,5,9" gibi image_id dizisi bekler.
+    İlgili portföy grubunun görsel sıralamasını günceller.
     """
     raw = request.POST.get("order") or ""
     try:
@@ -192,12 +184,10 @@ def group_save_order(request: HttpRequest, pid: int) -> JsonResponse:
     except Exception:
         return HttpResponseBadRequest("Geçersiz order verisi")
 
-    # Tamamen temizleme
     if not ids:
         PortfolioImage.objects.filter(portfolio_id=pid).delete()
         return JsonResponse({"ok": True, "cleared": True})
 
-    # Temizle ve yeni sırayla ekle
     PortfolioImage.objects.filter(portfolio_id=pid).delete()
     bulk = [
         PortfolioImage(portfolio_id=pid, image_id=image_id, order=idx)
@@ -211,50 +201,26 @@ def group_save_order(request: HttpRequest, pid: int) -> JsonResponse:
 @require_POST
 def group_remove_image(request: HttpRequest, pid: int, image_id: int) -> JsonResponse:
     """
-    Sadece bu portföy ile görsel arasındaki bağı kaldırır (dosyayı silmez).
+    Portföy ile görsel arasındaki bağı kaldırır.
     """
     PortfolioImage.objects.filter(portfolio_id=pid, image_id=image_id).delete()
     return JsonResponse({"ok": True})
 
 
 # ------------------------------------------------------------------------------
-# (Opsiyonel) Basit ping/sağlık kontrolü
+# Vitrin Yönetimi (Showcase Manager)
 # ------------------------------------------------------------------------------
 
-@require_GET
-def ping(request: HttpRequest) -> JsonResponse:
-    return JsonResponse({"ok": True})
-
-
-# main/views.py
-from django.shortcuts import render, get_object_or_404
-from backoffice.models import Showcase, ShowcaseItem, PortfolioImage
-
-
-
-
-
-from backoffice.models import (
-    Portfolio, ImageAsset, PortfolioImage,  # zaten var
-    Showcase, ShowcaseItem,  # vitrin modelleri
-)
-
-
-# --------- SAYFA ----------
 @staff_member_required
 def showcase_manager(request):
     """
-    Solda vitrin listesi, sağda seçilen vitrin içeriği:
-      - vitrin oluştur/yenile/sil
-      - portföy ekle/çıkar
-      - sürükle-bırak sırala
-      - limit düzenle
+    Vitrinlerin listelendiği ve yönetildiği ana sayfa görünümü.
     """
     showcases = Showcase.objects.order_by("order", "name").prefetch_related(
         "items__portfolio"
     )
     portfolios = Portfolio.objects.filter(is_active=True).order_by("order", "name")
-    # default ilk vitrin ya da query ile seçim
+
     sid = request.GET.get("sid")
     selected = None
     if sid:
@@ -269,10 +235,13 @@ def showcase_manager(request):
     )
 
 
-# --------- API: vitrinin CRUD'u ----------
+# --------- API: Vitrinin CRUD'u ----------
 @staff_member_required
 @require_POST
 def showcase_create(request):
+    """
+    Yeni vitrin oluşturur.
+    """
     name = (request.POST.get("name") or "").strip()
     if not name:
         return JsonResponse({"ok": False, "error": "İsim gerekli."}, status=400)
@@ -283,6 +252,9 @@ def showcase_create(request):
 @staff_member_required
 @require_POST
 def showcase_update(request, sid: int):
+    """
+    Vitrin adını veya aktiflik durumunu günceller.
+    """
     s = get_object_or_404(Showcase, id=sid)
     if "name" in request.POST:
         name = (request.POST.get("name") or "").strip()
@@ -304,17 +276,19 @@ def showcase_update(request, sid: int):
 @staff_member_required
 @require_POST
 def showcase_delete(request, sid: int):
+    """
+    Vitrin kaydını siler.
+    """
     Showcase.objects.filter(id=sid).delete()
     return JsonResponse({"ok": True})
 
 
-# --------- API: item işlemleri ----------
+# --------- API: ShowcaseItem işlemleri ----------
 @staff_member_required
 @require_POST
 def showcase_items_add(request, sid: int):
     """
-    Bir vitrinin içine bir veya daha fazla portföy ekle.
-    POST: portfolio_ids=1,2,3  & default_limit=12
+    Bir vitrine portföyleri ekler.
     """
     s = get_object_or_404(Showcase, id=sid)
     ids_raw = request.POST.get("portfolio_ids") or ""
@@ -341,7 +315,7 @@ def showcase_items_add(request, sid: int):
 @transaction.atomic
 def showcase_items_reorder(request, sid: int):
     """
-    POST: order=item_id1,item_id2,...
+    Vitrin içindeki öğelerin sıralamasını günceller.
     """
     s = get_object_or_404(Showcase, id=sid)
     raw = request.POST.get("order") or ""
@@ -350,7 +324,6 @@ def showcase_items_reorder(request, sid: int):
     except Exception:
         return HttpResponseBadRequest("Geçersiz order")
 
-    # sadece bu vitrine ait item'lar
     items = list(ShowcaseItem.objects.filter(showcase=s, id__in=ids))
     by_id = {i.id: i for i in items}
     for idx, iid in enumerate(ids):
@@ -364,6 +337,9 @@ def showcase_items_reorder(request, sid: int):
 @staff_member_required
 @require_POST
 def showcase_item_update(request, sid: int, item_id: int):
+    """
+    Vitrin öğesinin (ShowcaseItem) limitini günceller.
+    """
     it = get_object_or_404(ShowcaseItem, showcase_id=sid, id=item_id)
     if "limit" in request.POST:
         val = request.POST.get("limit")
@@ -375,5 +351,17 @@ def showcase_item_update(request, sid: int, item_id: int):
 @staff_member_required
 @require_POST
 def showcase_item_remove(request, sid: int, item_id: int):
+    """
+    Vitrin öğesini (ShowcaseItem) siler (Portföyü vitrinden kaldırır).
+    """
     ShowcaseItem.objects.filter(showcase_id=sid, id=item_id).delete()
+    return JsonResponse({"ok": True})
+
+
+# ------------------------------------------------------------------------------
+# (Opsiyonel) Basit ping/sağlık kontrolü
+# ------------------------------------------------------------------------------
+
+@require_GET
+def ping(request: HttpRequest) -> JsonResponse:
     return JsonResponse({"ok": True})

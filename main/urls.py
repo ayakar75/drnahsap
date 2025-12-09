@@ -19,6 +19,8 @@ urlpatterns = [
     # Diğer sayfalar
     path("about/", views.about, name="about"),
     path("services/", views.services, name="services"),
+
+    # JavaScript'in beklediği format ile uyumlu
     path("services/portfolio/<int:sid>/images/", views.services_showcase_images, name="services_showcase_images"),
     path("blog/", views.blog, name="blog"),
     path("blog/details/", views.blog_details, name="blog_details"),

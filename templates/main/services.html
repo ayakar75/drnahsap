@@ -4,7 +4,9 @@
 {% block body_class %}services-page{% endblock %}
 
 {% block content %}
-    <!-- Page Title -->
+    {# 1. SimpleLightbox CSS'i Yerel Olarak Yükle #}
+    <link rel="stylesheet" href="{% static 'assets/vendor/simplelightbox/simple-lightbox.min.css' %}"/>
+
     <div class="page-title dark-background"
          style="background-image: url({% static 'assets/img/services/atolye.png' %});">
         <div class="container position-relative">
@@ -18,7 +20,6 @@
         </div>
     </div>
 
-    <!-- Giriş -->
     <section class="section">
         <div class="container">
             <div class="row gy-4 align-items-center">
@@ -42,7 +43,6 @@
         </div>
     </section>
 
-    <!-- Alt Services -->
     <section id="alt-services" class="alt-services section">
         <div class="container">
             <div class="row justify-content-around gy-4">
@@ -90,38 +90,6 @@
         </div>
     </section>
 
-    <!-- Hizmet Kartları -->
-    <section class="services section bg-light">
-        <div class="container">
-            <div class="section-header text-center">
-                <h2>Başlıca Ürün/Hizmet Grupları</h2>
-                <p>Ev ve iş yerleri için ölçüye özel üretim.</p>
-            </div>
-            <div class="row gy-4">
-                {% for card in service_cards %}
-                    <div class="col-md-6 col-xl-4">
-                        <div class="card h-100 shadow-sm border-0">
-                            <div class="card-body p-4">
-                                <div class="d-flex align-items-start">
-                                    <i class="bi {{ card.icon }} display-6 me-3"></i>
-                                    <div>
-                                        <h5 class="card-title mb-2">{{ card.title }}</h5>
-                                        <p class="card-text mb-0">Ölçüye özel tasarım, kaliteli donanım ve temiz
-                                            işçilik.</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="card-footer bg-white border-0 pt-0 px-4 pb-4">
-                                <a href="{% url 'main:projects' %}" class="btn btn-primary btn-sm">Örnek Çalışmalar</a>
-                            </div>
-                        </div>
-                    </div>
-                {% endfor %}
-            </div>
-        </div>
-    </section>
-
-    <!-- Malzemeler -->
     <section class="section">
         <div class="container">
             <div class="section-header text-center">
@@ -152,8 +120,6 @@
         </div>
     </section>
 
-    <!-- Portföy (yalnızca adlar; tıklayınca AJAX ile görseller) -->
-    <!-- Portföy / Vitrinler -->
     <section class="section">
         <div class="container">
             <div class="section-header text-center">
@@ -166,7 +132,6 @@
                     <div class="col-lg-10">
 
                         {% for sc in showcases %}
-                            <!-- Başlık -->
                             <div class="text-center my-4">
                                 <a href="#" class="display-6 text-decoration-none fw-semibold showcase-link"
                                    data-sid="{{ sc.id }}">
@@ -176,10 +141,10 @@
                                     <div class="small text-muted mt-1">({{ sc.total }} görsel)</div>{% endif %}
                             </div>
 
-                            <!-- Bu vitrin için galeri kapsayıcısı -->
-                            <div id="sc-{{ sc.id }}-gallery" class="row gy-3" style="display:none;"></div>
+                            {# HTML DÜZELTİLDİ: data-sid eklendi #}
+                            <div id="sc-{{ sc.id }}-gallery" class="row gy-3 simple-gallery"
+                                 data-sid="{{ sc.id }}" style="display:none;"></div>
 
-                            <!-- Daha fazla -->
                             <div class="text-center mt-3" id="sc-{{ sc.id }}-more-wrap" style="display:none;">
                                 <button class="btn btn-outline-primary btn-sm sc-more-btn" data-sid="{{ sc.id }}">Daha
                                     Fazla Yükle
@@ -191,6 +156,9 @@
 
                     </div>
                 </div>
+
+                {# 2. SimpleLightbox JS'i Yerel Olarak Yükle #}
+                <script src="{% static 'assets/vendor/simplelightbox/simple-lightbox.min.js' %}"></script>
 
                 <script>
                     (function () {
@@ -224,16 +192,28 @@
                                 data.images.forEach(img => {
                                     const col = document.createElement('div');
                                     col.className = 'col-6 col-md-4 col-lg-3';
+
+                                    // HTML yapısı
                                     col.innerHTML = `
-                  <a href="${img.url}" target="_blank" rel="noopener">
-                    <img src="${img.url}" class="img-fluid rounded-3" alt="">
-                  </a>`;
+                      <a href="${img.url}" title="${img.title}">
+                        <img src="${img.url}" class="img-fluid rounded-3" alt="${img.title}">
+                      </a>`;
                                     gal.appendChild(col);
                                 });
 
                                 gal.style.display = '';
                                 moreWrap.style.display = data.has_more ? 'block' : 'none';
+
+                                // SimpleLightbox'ı başlat/yenile
+                                // Kütüphane yüklenmeme hatası giderildiği için bu kısım artık çalışmalı.
+                                new SimpleLightbox(`#sc-${sid}-gallery a`, {
+                                    captionAttribute: "title",
+                                    navText: ['←', '→'],
+                                    closeText: '×',
+                                });
+
                             } catch (e) {
+                                console.error(e);
                                 gal.innerHTML = '<div class="col-12 text-center text-muted">Görseller yüklenemedi.</div>';
                                 gal.style.display = '';
                             } finally {
@@ -246,7 +226,22 @@
                             a.addEventListener('click', e => {
                                 e.preventDefault();
                                 const sid = a.dataset.sid;
-                                // ilk tıklamada reset true, sonra sayfalama devam
+
+                                // Her tıklamada galeriyi temizle ve ilk sayfayı yükle
+                                document.querySelectorAll('.simple-gallery').forEach(g => {
+                                    const otherSid = g.dataset.sid;
+
+                                    if (otherSid && otherSid !== sid) {
+                                        g.style.display = 'none';
+                                        g.innerHTML = '';
+
+                                        // Hata veren opsiyonel zincirleme yerine if kontrolü kullanılıyor
+                                        const moreWrapElement = document.getElementById(`sc-${otherSid}-more-wrap`);
+                                        if (moreWrapElement) {
+                                            moreWrapElement.style.display = 'none';
+                                        }
+                                    }
+                                });
                                 state[sid] = {page: 1, per: PER, loading: false};
                                 loadShowcase(sid, true);
                             });
@@ -269,7 +264,6 @@
     </section>
 
 
-    <!-- SSS -->
     <section class="section bg-light">
         <div class="container">
             <div class="section-header text-center">
@@ -295,7 +289,6 @@
         </div>
     </section>
 
-    <!-- CTA -->
     <section class="call-to-action section">
         <div class="container">
             <div class="row align-items-center gy-3">
