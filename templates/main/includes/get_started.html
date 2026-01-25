@@ -15,10 +15,14 @@
             </div>
 
             <div class="col-lg-5" data-aos="zoom-out" data-aos-delay="200">
-                <!-- SADECE class değişti (php-email-form kaldırıldı) -->
                 <form id="getStartedForm" action="{% url 'main:contact_message_api' %}" method="post"
                       class="gs-email-form">
                     {% csrf_token %}
+
+                    <div style="display:none;" aria-hidden="true">
+                        <input type="text" name="honeypot_field" tabindex="-1" autocomplete="off">
+                    </div>
+
                     <h3>Teklif Formu</h3>
                     <p>DRN Ahşap Atölye ekibi en kısa sürede sizinle iletişime geçecektir.</p>
 
@@ -32,7 +36,6 @@
                         <div class="col-12">
                             <input type="text" class="form-control" name="phone" placeholder="Telefon" required>
                         </div>
-                        <!-- EKLENDİ: Konu -->
                         <div class="col-12">
                             <input type="text" class="form-control" name="subject"
                                    placeholder="Konu (örn. Mutfak Dolabı, Gardırop)">
@@ -45,10 +48,11 @@
 
                         <div class="col-12 text-center">
                             <div class="loading" style="display:none;">Yükleniyor…</div>
-                            <div class="error-message" style="display:none;"></div>
-                            <div class="sent-message" style="display:none;">Talebiniz başarıyla gönderildi. Teşekkür
-                                ederiz!
+                            <div class="error-message" style="display:none; color:red; margin-bottom:10px;"></div>
+                            <div class="sent-message" style="display:none; color:green; margin-bottom:10px;">
+                                Talebiniz başarıyla gönderildi. Teşekkür ederiz!
                             </div>
+
                             <button id="gsSubmit" type="submit" class="btn btn-warning"
                                     style="background-color:#f9a825; border:none; color:#fff;">
                                 Teklif Al
@@ -56,8 +60,7 @@
                         </div>
                     </div>
                 </form>
-            </div><!-- End Quote Form -->
-
+            </div>
         </div>
     </div>
 </section>
@@ -73,9 +76,6 @@
         const form = document.getElementById('getStartedForm');
         if (!form) return;
 
-        // Güvenlik: yanlışlıkla bırakılmışsa php-email-form sınıfını kaldır
-        form.classList.remove('php-email-form');
-
         const csrftoken = getCookie('csrftoken');
         const loadingEl = form.querySelector('.loading');
         const errorEl = form.querySelector('.error-message');
@@ -83,7 +83,7 @@
         const submitBtn = document.getElementById('gsSubmit');
 
         form.addEventListener('submit', async function (e) {
-            e.preventDefault();
+            e.preventDefault(); // Sayfa yenilenmesini engeller
 
             if (loadingEl) loadingEl.style.display = 'block';
             if (errorEl) {
@@ -110,10 +110,8 @@
                 } else {
                     if (sentEl) sentEl.style.display = 'block';
                     form.reset();
-
-                    // ✅ 5 saniye sonra başarı mesajını otomatik gizle
                     setTimeout(() => {
-                        sentEl.style.display = 'none';
+                        if (sentEl) sentEl.style.display = 'none';
                     }, 5000);
                 }
             } catch (err) {

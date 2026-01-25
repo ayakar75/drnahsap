@@ -220,6 +220,11 @@ def projects_grid(request):
 @require_POST
 @csrf_protect
 def contact_message_api(request):
+    # Bot kontrolü: Eğer bu alan doluysa işlemi durdur
+    honeypot = request.POST.get("honeypot_field", "")
+    if honeypot:
+        return JsonResponse({"ok": False, "errors": {"bot": "Spam engellendi."}}, status=400)
+
     name = request.POST.get("name", "").strip()
     email = request.POST.get("email", "").strip()
     phone = request.POST.get("phone", "").strip()
