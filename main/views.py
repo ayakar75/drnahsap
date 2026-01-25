@@ -125,28 +125,35 @@ def blog_details(request: HttpRequest) -> HttpResponse:
 
 
 def contact(request: HttpRequest) -> HttpResponse:
-    """
-    Basit POST yakalama. Gerçek hayatta burada e-posta gönderme
-    veya veritabanına kaydetme yapılabilir.
-    """
     form_data = {}
     sent = False
 
     if request.method == "POST":
+        # 1. Bot Kontrolü
+        honeypot = request.POST.get("honeypot_field", "")
+        if honeypot:
+            # Bot yakalandı, hiçbir şey kaydetme, sessizce sayfayı geri döndür
+            return render(request, "main/contact.html", {"sent": False})
+
+        # 2. Verileri Al
         form_data["name"] = request.POST.get("name", "").strip()
         form_data["email"] = request.POST.get("email", "").strip()
         form_data["message"] = request.POST.get("message", "").strip()
-        # TODO: e-posta gönder / DB'ye kaydet / reCAPTCHA vb.
-        sent = True
 
-    return render(
-        request,
-        "main/contact.html",
-        {
-            "sent": sent,
-            "form_data": form_data,
-        },
-    )
+        # 3. Kayıt İşlemi (Tabloya basıyoruz)
+        if form_data["name"] and form_data["email"] and form_data["message"]:
+            ContactMessage.objects.create(
+                name=form_data["name"],
+                email=form_data["email"],
+                message=form_data["message"]
+            )
+            sent = True
+            form_data = {}  # Formu temizle
+
+    return render(request, "main/contact.html", {
+        "sent": sent,
+        "form_data": form_data,
+    })
 
 
 def terms(request: HttpRequest) -> HttpResponse:
