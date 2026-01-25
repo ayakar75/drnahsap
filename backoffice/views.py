@@ -38,21 +38,39 @@ def send_reply_email(request, msg_id):
     reply_content = request.POST.get("reply_content", "").strip()
 
     if reply_content:
+        subject = f"Re: {msg.subject or 'İletişim Mesajı Cevabı'}"
+
+        # İstediğiniz imza formatı:
+        # Sayın [Ad],
+        # [Mesaj İçeriği]
+        # ---
+        # DRN Ahşap Atölyesi
+        # Ömür YATKIN
+        # omuryatkin@hotmail.com
+        full_message = (
+            f"Sayın {msg.name},\n\n"
+            f"{reply_content}\n\n"
+            f"---\n"
+            f"DRN Ahşap Atölyesi\n"
+            f"Ömür YATKIN\n"
+            f"omuryatkin@hotmail.com"
+        )
+
         try:
-            # fail_silently=False yaparak hatayı ekrana dökmesini sağlıyoruz
             send_mail(
-                f"Re: {msg.subject or 'İletişim Mesajı Cevabı'}",
-                f"Sayın {msg.name},\n\n{reply_content}\n\n---\nDRN Ahşap Atölye",
-                settings.EMAIL_HOST_USER,
+                subject,
+                full_message,
+                settings.EMAIL_HOST_USER,  # iletisim.drnahsap@gmail.com üzerinden gider
                 [msg.email],
                 fail_silently=False,
             )
+            # Mail başarılıysa OKUNDU yap ve kaydet
             msg.is_read = True
             msg.save()
-            dj_messages.success(request, "E-posta başarıyla gönderildi.")
+            dj_messages.success(request, f"Cevabınız {msg.email} adresine iletildi.")
         except Exception as e:
-            # Hata neyse (Şifre hatası, Port hatası vb.) burada yazar
-            dj_messages.error(request, f"E-posta gönderilemedi: {str(e)}")
+            # Hata oluşursa (Şifre, Bağlantı vb.) kırmızı kutuda yazar
+            dj_messages.error(request, f"Mail gönderilemedi: {str(e)}")
 
     return redirect('backoffice:messages_list')
 
