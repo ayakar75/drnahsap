@@ -96,3 +96,26 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = None
 FILE_UPLOAD_MAX_MEMORY_SIZE = 50 * 1024 * 1024
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 50000
 FILE_UPLOAD_TEMP_DIR = BASE_DIR / "tmp_uploads"
+
+
+import os
+
+# Gmail SMTP Ayarları
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False  # SSL (Secure Sockets Layer) kullanılmayacak
+# Env dosyasından verileri çekiyoruz
+EMAIL_HOST_USER='iletisim.drnahsap@gmail.com'
+EMAIL_HOST_PASSWORD='pkha yfkd gmsu eabf'
+#EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+#EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = f'DRN Ahşap Atölyesi<{EMAIL_HOST_USER}>'
+
+
+
+
+# Gmail SMTP kimlik doğrulama
+#EMAIL_HOST_USER = 'ryakar75@gmail.com'  # Gmail adresiniz
+#EMAIL_HOST_PASSWORD = 'hzez glji hbte jdhg'  # Gmail şifreniz (Bu aytakip için olandı. Değişecek)

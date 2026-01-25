@@ -35,4 +35,6 @@ urlpatterns = [
 
     # ⚙️ Test / Ping
     path("ping/", views.ping, name="ping"),
+
+    path('mesajlar/cevapla/<int:msg_id>/', views.send_reply_email, name='send_reply_email'),
 ]

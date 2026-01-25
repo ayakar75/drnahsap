@@ -2,8 +2,6 @@ from __future__ import annotations
 
 import json
 from typing import List
-
-from django.contrib import messages as dj_messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.core.paginator import Paginator
@@ -17,6 +15,9 @@ from django.http import (
 from django.shortcuts import redirect, render, get_object_or_404
 from django.utils.text import slugify
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
+from django.core.mail import send_mail
+from django.conf import settings
+from django.contrib import messages as dj_messages
 
 # Projenizde varsa iletişim mesajları için (yoksa bu importu silebilirsiniz)
 try:
@@ -28,6 +29,32 @@ except Exception:
 from backoffice.models import Portfolio, ImageAsset, PortfolioImage, Showcase, ShowcaseItem
 
 User = get_user_model()
+
+
+@staff_member_required
+@require_POST
+def send_reply_email(request, msg_id):
+    msg = get_object_or_404(ContactMessage, id=msg_id)
+    reply_content = request.POST.get("reply_content", "").strip()
+
+    if reply_content:
+        try:
+            # fail_silently=False yaparak hatayı ekrana dökmesini sağlıyoruz
+            send_mail(
+                f"Re: {msg.subject or 'İletişim Mesajı Cevabı'}",
+                f"Sayın {msg.name},\n\n{reply_content}\n\n---\nDRN Ahşap Atölye",
+                settings.EMAIL_HOST_USER,
+                [msg.email],
+                fail_silently=False,
+            )
+            msg.is_read = True
+            msg.save()
+            dj_messages.success(request, "E-posta başarıyla gönderildi.")
+        except Exception as e:
+            # Hata neyse (Şifre hatası, Port hatası vb.) burada yazar
+            dj_messages.error(request, f"E-posta gönderilemedi: {str(e)}")
+
+    return redirect('backoffice:messages_list')
 
 
 # ------------------------------------------------------------------------------
@@ -68,24 +95,80 @@ def admin_logout(request: HttpRequest) -> HttpResponse:
 @staff_member_required
 def manager_dashboard(request: HttpRequest) -> HttpResponse:
     """
-    Yönetim ana sayfası.
+    Yönetim ana sayfası: Okunmamış mesaj sayısını hesaplar.
     """
-    return render(request, "backoffice/dashboard.html")
+    # Okunmamış mesaj sayısını ContactMessage tablosundan çekiyoruz
+    unread_count = 0
+    if ContactMessage is not None:
+        unread_count = ContactMessage.objects.filter(is_read=False).count()
+
+    return render(request, "backoffice/dashboard.html", {
+        "unread_count": unread_count
+    })
 
 
 @staff_member_required
 def messages_list(request: HttpRequest) -> HttpResponse:
     """
-    İletişim mesajları listesi (varsa).
+    İletişim mesajları listesi: Silme, Okundu/Okunmadı ve Arama özelliklerini içerir.
     """
     if ContactMessage is None:
-        # main app yoksa boş sayfa bas
         return render(request, "backoffice/messages.html", {"page_obj": None})
 
+    # --- İŞLEMLER (Silme ve Durum Güncelleme) ---
+    # Silme işlemi
+    sil_id = request.GET.get('sil')
+    if sil_id:
+        ContactMessage.objects.filter(id=sil_id).delete()
+
+    # Okundu işaretleme
+    okundu_id = request.GET.get('okundu')
+    if okundu_id:
+        ContactMessage.objects.filter(id=okundu_id).update(is_read=True)
+
+    # Okunmadı işaretleme
+    okunmadi_id = request.GET.get('okunmadi')
+    if okunmadi_id:
+        ContactMessage.objects.filter(id=okunmadi_id).update(is_read=False)
+
+    # --- FİLTRELEME VE ARAMA ---
+    status = request.GET.get('status', 'all')
+    q = request.GET.get('q', '').strip()
+
     qs = ContactMessage.objects.all().order_by("-created_at")
+
+    if status == 'unread':
+        qs = qs.filter(is_read=False)
+    elif status == 'read':
+        qs = qs.filter(is_read=True)
+
+    if q:
+        qs = qs.filter(
+            name__icontains=q
+        ) | qs.filter(
+            message__icontains=q
+        ) | qs.filter(
+            email__icontains=q
+        ) | qs.filter(
+            subject__icontains=q
+        )
+
+    # --- SAYFALAMA VE İSTATİSTİKLER ---
     paginator = Paginator(qs, 20)
     page_obj = paginator.get_page(request.GET.get("page") or 1)
-    return render(request, "backoffice/messages.html", {"page_obj": page_obj})
+
+    counts = {
+        "all": ContactMessage.objects.count(),
+        "unread": ContactMessage.objects.filter(is_read=False).count(),
+        "read": ContactMessage.objects.filter(is_read=True).count(),
+    }
+
+    return render(request, "backoffice/messages.html", {
+        "page_obj": page_obj,
+        "status": status,
+        "q": q,
+        "counts": counts
+    })
 
 
 # ------------------------------------------------------------------------------

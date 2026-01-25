@@ -61,8 +61,15 @@
                             <h5 class="card-title mb-2">İletişim Mesajları</h5>
                             <p class="text-muted mb-4">Ziyaretçilerin gönderdiği iletişim formlarını görüntüleyin.</p>
                             <div class="mt-auto d-grid">
-                                <a href="{% url 'backoffice:messages_list' %}" class="btn btn-outline-secondary">
+                                <a href="{% url 'backoffice:messages_list' %}"
+                                   class="btn btn-outline-secondary position-relative">
                                     Mesajları Gör
+                                    {% if unread_count > 0 %}
+                                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                            {{ unread_count }}
+                            <span class="visually-hidden">Okunmamış Mesaj</span>
+                        </span>
+                                    {% endif %}
                                 </a>
                             </div>
                         </div>
