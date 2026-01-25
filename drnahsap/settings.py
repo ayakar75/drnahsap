@@ -108,7 +108,7 @@ EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False  # SSL (Secure Sockets Layer) kullanılmayacak
 # Env dosyasından verileri çekiyoruz
 EMAIL_HOST_USER='iletisim.drnahsap@gmail.com'
-EMAIL_HOST_PASSWORD='pkha yfkd gmsu eabf'
+EMAIL_HOST_PASSWORD='pkhayfkdgmsueabf'
 #EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
 #EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = f'DRN Ahşap Atölyesi<{EMAIL_HOST_USER}>'
