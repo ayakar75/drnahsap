@@ -1,50 +1,164 @@
 {% extends 'main/base.html' %}
+{% load static %}
+
 {% block title %}İletişim - DRN Ahşap{% endblock %}
-{% block body_class %}inner-page{% endblock %}
+{% block body_class %}contact-page{% endblock %}
 
 {% block content %}
-    <section class="py-5">
-        <div class="container">
-            <h1 class="mb-4">İletişim</h1>
-            <div class="row gy-4">
-                <div class="col-lg-6">
-                    <p>Adres, telefon, e-posta bilgileri.</p>
-                </div>
-                <div class="col-lg-6">
-                    {% if sent %}
-                        <div class="alert alert-success">
-                            Mesajınız başarıyla iletildi. Teşekkür ederiz!
-                        </div>
-                    {% endif %}
+    <div class="page-title dark-background"
+         style="background-image: url({% static 'assets/img/services/atolye.png' %});">
+        <div class="container position-relative">
+            <h1>İletişim</h1>
+            <nav class="breadcrumbs">
+                <ol>
+                    <li><a href="{% url 'main:home' %}">Anasayfa</a></li>
+                    <li class="current">İletişim</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
 
-                    <form method="post" id="contactForm">
+    <section class="contact section">
+        <div class="container">
+            <div class="row gy-4">
+
+                <div class="col-lg-5">
+                    <div class="info-wrap" style="background: #f4f4f4; padding: 30px; border-radius: 10px;">
+                        <div class="info-item d-flex mb-4">
+                            <i class="bi bi-geo-alt flex-shrink-0"
+                               style="font-size: 24px; color: #f9a825; margin-right: 15px;"></i>
+                            <div>
+                                <h3 style="font-size: 20px; font-weight: 700;">Adres</h3>
+                                <p>Zümrütevler Mahallesi Canay Sokak No:12 Maltepe/İSTANBUL</p>
+                            </div>
+                        </div>
+
+                        <div class="info-item d-flex mb-4">
+                            <i class="bi bi-telephone flex-shrink-0"
+                               style="font-size: 24px; color: #f9a825; margin-right: 15px;"></i>
+                            <div>
+                                <h3 style="font-size: 20px; font-weight: 700;">Telefon</h3>
+                                <p>+90 (532) 372 23 56</p>
+                            </div>
+                        </div>
+
+                        <div class="info-item d-flex mb-4">
+                            <i class="bi bi-envelope flex-shrink-0"
+                               style="font-size: 24px; color: #f9a825; margin-right: 15px;"></i>
+                            <div>
+                                <h3 style="font-size: 20px; font-weight: 700;">E-posta</h3>
+                                <p>omuryatkin@hotmail.com</p>
+                                <p>iletisim.drnahsap@gmail.com</p>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 text-center">
+                            <img src="{% static 'assets/img/logo/logo.png' %}" class="img-fluid rounded-4"
+                                 alt="DRN Ahşap" style="max-width: 200px;">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-7">
+                    <form id="contactForm" action="{% url 'main:contact_message_api' %}" method="post"
+                          style="background: #fff; padding: 30px; border: 1px solid #eee; border-radius: 10px;">
                         {% csrf_token %}
 
                         <div style="display:none;" aria-hidden="true">
                             <input type="text" name="honeypot_field" tabindex="-1" autocomplete="off">
                         </div>
 
-                        <div class="row gy-3">
-                            <div class="col-12">
-                                <input type="text" name="name" class="form-control" placeholder="Ad Soyad" required
-                                       value="{{ form_data.name|default:'' }}">
-                            </div>
-                            <div class="col-12">
-                                <input type="email" name="email" class="form-control" placeholder="E-posta" required
-                                       value="{{ form_data.email|default:'' }}">
-                            </div>
-                            <div class="col-12">
-                                <textarea name="message" rows="6" class="form-control" placeholder="Mesajınız"
-                                          required>{{ form_data.message|default:'' }}</textarea>
+                        <div class="row gy-4">
+                            <div class="col-md-6">
+                                <input type="text" name="name" class="form-control" placeholder="Ad Soyad" required>
                             </div>
 
-                            <div class="col-12 text-end">
-                                <button class="btn btn-primary" type="submit" id="contactSubmitBtn">Gönder</button>
+                            <div class="col-md-6">
+                                <input type="email" name="email" class="form-control" placeholder="E-posta" required>
+                            </div>
+
+                            <div class="col-12">
+                                <input type="text" name="phone" class="form-control" placeholder="Telefon" required>
+                            </div>
+
+                            <div class="col-12">
+                                <input type="text" name="subject" class="form-control" placeholder="Konu" required>
+                            </div>
+
+                            <div class="col-12">
+                                <textarea name="message" rows="6" class="form-control" placeholder="Mesajınız"
+                                          required></textarea>
+                            </div>
+
+                            <div class="col-12 text-center">
+                                <div id="form-status-msg"
+                                     style="margin-bottom: 15px; font-weight: 600; min-height: 24px;"></div>
+
+                                <button id="contactSubmitBtn" type="submit" class="btn btn-primary px-5 py-2"
+                                        style="background-color:#f9a825; border:none; color: #fff;">
+                                    Mesaj Gönder
+                                </button>
                             </div>
                         </div>
                     </form>
                 </div>
+
             </div>
         </div>
     </section>
+
+    <script>
+        function getCookie(name) {
+            const m = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+            return m ? m.pop() : '';
+        }
+
+        (function () {
+            const form = document.getElementById('contactForm');
+            const statusMsg = document.getElementById('form-status-msg');
+            const submitBtn = document.getElementById('contactSubmitBtn');
+            const csrftoken = getCookie('csrftoken');
+
+            if (!form) return;
+
+            form.addEventListener('submit', async function (e) {
+                e.preventDefault();
+
+                // UI Sıfırla
+                submitBtn.disabled = true;
+                statusMsg.style.display = 'block';
+                statusMsg.style.color = '#555';
+                statusMsg.textContent = 'Mesajınız iletiliyor...';
+
+                try {
+                    const resp = await fetch(form.action, {
+                        method: 'POST',
+                        headers: {'X-CSRFToken': csrftoken},
+                        body: new FormData(form)
+                    });
+
+                    const data = await resp.json().catch(() => ({}));
+
+                    // Başarı Kontrolü (Görseldeki hatayı önleyen kısım)
+                    if (data.ok === true) {
+                        statusMsg.style.color = 'green';
+                        statusMsg.textContent = 'Mesajınız başarıyla iletildi.';
+                        form.reset();
+                        setTimeout(() => {
+                            statusMsg.textContent = '';
+                        }, 5000);
+                    } else {
+                        // Hata durumunda sadece metni göster
+                        statusMsg.style.color = 'red';
+                        statusMsg.textContent = (data.errors && Object.values(data.errors).join(' ')) || 'Gönderim sırasında bir hata oluştu.';
+                    }
+                } catch (err) {
+                    statusMsg.style.color = 'red';
+                    statusMsg.textContent = 'Sunucuya ulaşılamadı. Lütfen bağlantınızı kontrol edin.';
+                } finally {
+                    submitBtn.disabled = false;
+                }
+            });
+        })();
+    </script>
 {% endblock %}
