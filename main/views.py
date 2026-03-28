@@ -1,12 +1,13 @@
 from datetime import datetime
 from django.core.paginator import Paginator
-from django.http import JsonResponse
-from django.views.decorators.http import require_POST
-from django.views.decorators.csrf import csrf_exempt, csrf_protect
-from .models import ContactMessage
 from django.http import HttpRequest, HttpResponse
-from backoffice.models import Showcase, ShowcaseItem, Portfolio, PortfolioImage
-
+import os
+import requests
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_protect
+from .models import ContactMessage
+from django.http import HttpRequest, HttpResponse, JsonResponse
+from backoffice.models import Showcase, ShowcaseItem, PortfolioImage
 
 def projects_main(request):
     qs, cat_slug = _filtered_projects(request)
@@ -24,16 +25,6 @@ def about(request: HttpRequest) -> HttpResponse:
     # templates/main/about.html
     return render(request, "main/about.html")
 
-
-# main/views.py
-from django.shortcuts import render
-from django.http import HttpRequest, HttpResponse
-from backoffice.models import Showcase, ShowcaseItem, PortfolioImage
-
-# main/views.py
-from django.shortcuts import render, get_object_or_404
-from django.http import HttpRequest, HttpResponse, JsonResponse
-from backoffice.models import Showcase, ShowcaseItem, PortfolioImage
 
 
 def services(request: HttpRequest) -> HttpResponse:
@@ -224,28 +215,54 @@ def projects_grid(request):
     })
 
 
+
+
+
 @require_POST
 @csrf_protect
 def contact_message_api(request):
-    # Bot kontrolü: Eğer bu alan doluysa işlemi durdur
+    # 1. BİRİNCİ KİLİT: Honeypot Kontrolü
+    # Eğer bot gizli olan bu alanı doldurursa, işlemi anında iptal et.
     honeypot = request.POST.get("honeypot_field", "")
     if honeypot:
         return JsonResponse({"ok": False, "errors": {"bot": "Spam engellendi."}}, status=400)
 
+    # 2. İKİNCİ KİLİT: reCAPTCHA v3 Doğrulaması
+    recaptcha_token = request.POST.get("recaptcha_token", "")
+    # docker.env dosyasındaki SERVER_RECAPTCHA değerini okur
+    recaptcha_secret = os.environ.get("SERVER_RECAPTCHA")
+
+    # Google API'sine token'ı doğrulaması için istek gönderiyoruz
+    verify_res = requests.post(
+        'https://www.google.com/recaptcha/api/siteverify',
+        data={'secret': recaptcha_secret, 'response': recaptcha_token}
+    ).json()
+
+    # Google'dan gelen 'success' değeri False ise veya puan 0.5'ten düşükse (bot şüphesi)
+    if not verify_res.get('success') or verify_res.get('score', 0) < 0.5:
+        return JsonResponse({
+            "ok": False,
+            "errors": {"bot": "Güvenlik doğrulamasından geçemediniz. Lütfen tekrar deneyin."}
+        }, status=400)
+
+    # 3. VERİ KAYIT: Eğer her iki kontrolü de geçtiyse mesajı kaydet
     name = request.POST.get("name", "").strip()
     email = request.POST.get("email", "").strip()
     phone = request.POST.get("phone", "").strip()
     subject = request.POST.get("subject", "").strip()
     message = request.POST.get("message", "").strip()
 
-    errors = {}
-    if not name:  errors["name"] = "Ad gerekli."
-    if not email: errors["email"] = "E-posta gerekli."
-    if not message: errors["message"] = "Mesaj gerekli."
-    if errors:
-        return JsonResponse({"ok": False, "errors": errors}, status=400)
+    # Temel boş alan kontrolü
+    if not name or not email or not message:
+        return JsonResponse({"ok": False, "errors": {"fields": "Lütfen zorunlu alanları doldurun."}}, status=400)
 
+    # Mesajı veritabanına ekle
     ContactMessage.objects.create(
-        name=name, email=email, phone=phone, subject=subject, message=message
+        name=name,
+        email=email,
+        phone=phone,
+        subject=subject,
+        message=message
     )
+
     return JsonResponse({"ok": True})
