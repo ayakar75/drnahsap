@@ -19,6 +19,8 @@
                       class="gs-email-form">
                     {% csrf_token %}
 
+                    <input type="hidden" name="recaptcha_token" id="gsRecaptchaToken">
+
                     <div style="display:none;" aria-hidden="true">
                         <input type="text" name="honeypot_field" tabindex="-1" autocomplete="off">
                     </div>
@@ -41,13 +43,13 @@
                                    placeholder="Konu (örn. Mutfak Dolabı, Gardırop)">
                         </div>
                         <div class="col-12">
-                             <textarea class="form-control" name="message" rows="6"
-                                       placeholder="Mesajınız (ölçüler, tarz, teslim tarihi, bütçe aralığı…)"
-                                       required></textarea>
+                            <textarea class="form-control" name="message" rows="6"
+                                      placeholder="Mesajınız (ölçüler, tarz, teslim tarihi, bütçe aralığı…)"
+                                      required></textarea>
                         </div>
 
                         <div class="col-12 text-center">
-                            <div class="loading" style="display:none;">Yükleniyor…</div>
+                            <div class="loading" style="display:none;">Güvenlik kontrolü yapılıyor...</div>
                             <div class="error-message" style="display:none; color:red; margin-bottom:10px;"></div>
                             <div class="sent-message" style="display:none; color:green; margin-bottom:10px;">
                                 Talebiniz başarıyla gönderildi. Teşekkür ederiz!
@@ -65,8 +67,9 @@
     </div>
 </section>
 
+<script src="https://www.google.com/recaptcha/api.js?render=6Ldd1JssAAAAADEGv2UobddP-L_tbuQoPpHCgMxd"></script>
+
 <script>
-    // CSRF cookie helper
     function getCookie(name) {
         const m = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
         return m ? m.pop() : '';
@@ -82,8 +85,8 @@
         const sentEl = form.querySelector('.sent-message');
         const submitBtn = document.getElementById('gsSubmit');
 
-        form.addEventListener('submit', async function (e) {
-            e.preventDefault(); // Sayfa yenilenmesini engeller
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
 
             if (loadingEl) loadingEl.style.display = 'block';
             if (errorEl) {
@@ -93,36 +96,43 @@
             if (sentEl) sentEl.style.display = 'none';
             if (submitBtn) submitBtn.disabled = true;
 
-            try {
-                const resp = await fetch(form.action, {
-                    method: 'POST',
-                    headers: {'X-CSRFToken': csrftoken},
-                    body: new FormData(form)
-                });
-                const data = await resp.json().catch(() => ({}));
+            // 3. RECAPTCHA TOKEN ALIM SÜRECİ (EKLEDİM)
+            grecaptcha.ready(function () {
+                grecaptcha.execute('6Ldd1JssAAAAADEGv2UobddP-L_tbuQoPpHCgMxd', {action: 'get_started'}).then(async function (token) {
+                    document.getElementById('gsRecaptchaToken').value = token;
 
-                if (!resp.ok || !data.ok) {
-                    const msg = (data.errors && Object.values(data.errors).join(' ')) || 'Gönderim başarısız.';
-                    if (errorEl) {
-                        errorEl.textContent = msg;
-                        errorEl.style.display = 'block';
+                    try {
+                        const resp = await fetch(form.action, {
+                            method: 'POST',
+                            headers: {'X-CSRFToken': csrftoken},
+                            body: new FormData(form)
+                        });
+                        const data = await resp.json().catch(() => ({}));
+
+                        if (!resp.ok || !data.ok) {
+                            const msg = (data.errors && Object.values(data.errors).join(' ')) || 'Güvenlik onayı alınamadı veya bir hata oluştu.';
+                            if (errorEl) {
+                                errorEl.textContent = msg;
+                                errorEl.style.display = 'block';
+                            }
+                        } else {
+                            if (sentEl) sentEl.style.display = 'block';
+                            form.reset();
+                            setTimeout(() => {
+                                if (sentEl) sentEl.style.display = 'none';
+                            }, 5000);
+                        }
+                    } catch (err) {
+                        if (errorEl) {
+                            errorEl.textContent = 'Sunucuya ulaşılamadı. Lütfen internet bağlantınızı kontrol edin.';
+                            errorEl.style.display = 'block';
+                        }
+                    } finally {
+                        if (loadingEl) loadingEl.style.display = 'none';
+                        if (submitBtn) submitBtn.disabled = false;
                     }
-                } else {
-                    if (sentEl) sentEl.style.display = 'block';
-                    form.reset();
-                    setTimeout(() => {
-                        if (sentEl) sentEl.style.display = 'none';
-                    }, 5000);
-                }
-            } catch (err) {
-                if (errorEl) {
-                    errorEl.textContent = 'Sunucuya ulaşılamadı. Lütfen daha sonra deneyin.';
-                    errorEl.style.display = 'block';
-                }
-            } finally {
-                if (loadingEl) loadingEl.style.display = 'none';
-                if (submitBtn) submitBtn.disabled = false;
-            }
+                });
+            });
         });
     })();
 </script>
