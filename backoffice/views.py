@@ -16,8 +16,9 @@ from django.shortcuts import redirect, render, get_object_or_404
 from django.utils.text import slugify
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 from django.core.mail import send_mail
-from django.conf import settings
 from django.contrib import messages as dj_messages
+from decouple import config  # Settings'deki yapına uygun olarak eklendi
+
 
 # Projenizde varsa iletişim mesajları için (yoksa bu importu silebilirsiniz)
 try:
@@ -34,45 +35,44 @@ User = get_user_model()
 @staff_member_required
 @require_POST
 def send_reply_email(request, msg_id):
+    """
+    İletişim mesajına e-posta ile yanıt gönderir.
+    """
+    # 1. Mesajı Getir
     msg = get_object_or_404(ContactMessage, id=msg_id)
     reply_content = request.POST.get("reply_content", "").strip()
 
-    if reply_content:
-        subject = f"Re: {msg.subject or 'İletişim Mesajı Cevabı'}"
+    if not reply_content:
+        dj_messages.error(request, "Yanıt içeriği boş olamaz.")
+        return redirect("backoffice:messages_list")
 
-        # İstediğiniz imza formatı:
-        # Sayın [Ad],
-        # [Mesaj İçeriği]
-        # ---
-        # DRN Ahşap Atölyesi
-        # Ömür YATKIN
-        # omuryatkin@hotmail.com
-        full_message = (
-            f"Sayın {msg.name},\n\n"
-            f"{reply_content}\n\n"
-            f"---\n"
-            f"DRN Ahşap Atölyesi\n"
-            f"Ömür YATKIN\n"
-            f"omuryatkin@hotmail.com"
+    # 2. Gönderen Bilgisini docker.env'den Çek (config ile)
+    # Projenin başında 'from decouple import config' olduğunu varsayıyoruz.
+    # Eğer yoksa dosyanın en üstüne eklemelisin.
+    from_email = config('EMAIL_HOST_USER')
+    subject = f"Yanıt: {msg.subject or 'İletişim Formu Mesajınız'}"
+
+    try:
+        # 3. E-postayı Gönder
+        send_mail(
+            subject=subject,
+            message=reply_content,
+            from_email=f"DRN Ahşap Atölyesi <{from_email}>",
+            recipient_list=[msg.email],
+            fail_silently=False,
         )
 
-        try:
-            send_mail(
-                subject,
-                full_message,
-                settings.EMAIL_HOST_USER,  # iletisim.drnahsap@gmail.com üzerinden gider
-                [msg.email],
-                fail_silently=False,
-            )
-            # Mail başarılıysa OKUNDU yap ve kaydet
-            msg.is_read = True
-            msg.save()
-            dj_messages.success(request, f"Cevabınız {msg.email} adresine iletildi.")
-        except Exception as e:
-            # Hata oluşursa (Şifre, Bağlantı vb.) kırmızı kutuda yazar
-            dj_messages.error(request, f"Mail gönderilemedi: {str(e)}")
+        # 4. Başarılıysa Okundu Olarak İşaretle
+        msg.is_read = True
+        msg.save()
+        dj_messages.success(request, f"Yanıt {msg.email} adresine başarıyla gönderildi.")
 
-    return redirect('backoffice:messages_list')
+    except Exception as e:
+        # SMTP hatası (şifre yanlışı, bağlantı sorunu vb.) durumunda burası çalışır
+        print(f"E-posta Gönderim Hatası: {str(e)}")
+        dj_messages.error(request, "E-posta gönderilemedi. Lütfen sistemin mail ayarlarını kontrol edin.")
+
+    return redirect("backoffice:messages_list")
 
 
 # ------------------------------------------------------------------------------

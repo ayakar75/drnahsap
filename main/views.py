@@ -1,13 +1,20 @@
 from datetime import datetime
 from django.core.paginator import Paginator
-from django.http import HttpRequest, HttpResponse
-import os
-import requests
-from django.views.decorators.http import require_POST
-from django.views.decorators.csrf import csrf_protect
-from .models import ContactMessage
+
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from backoffice.models import Showcase, ShowcaseItem, PortfolioImage
+
+import os
+import requests
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_protect
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError
+from decouple import config  # Settings'deki yapına uygun olarak eklendi
+from .models import ContactMessage
+from django.core.mail import send_mail  # Doğru olan 'send_mail'
+
 
 def projects_main(request):
     qs, cat_slug = _filtered_projects(request)
@@ -24,7 +31,6 @@ def projects_main(request):
 def about(request: HttpRequest) -> HttpResponse:
     # templates/main/about.html
     return render(request, "main/about.html")
-
 
 
 def services(request: HttpRequest) -> HttpResponse:
@@ -215,54 +221,62 @@ def projects_grid(request):
     })
 
 
-
-
-
 @require_POST
 @csrf_protect
 def contact_message_api(request):
-    # 1. BİRİNCİ KİLİT: Honeypot Kontrolü
-    # Eğer bot gizli olan bu alanı doldurursa, işlemi anında iptal et.
+    # --- 1. GÜVENLİK KONTROLLERİ (Honeypot & reCAPTCHA) ---
     honeypot = request.POST.get("honeypot_field", "")
     if honeypot:
         return JsonResponse({"ok": False, "errors": {"bot": "Spam engellendi."}}, status=400)
 
-    # 2. İKİNCİ KİLİT: reCAPTCHA v3 Doğrulaması
     recaptcha_token = request.POST.get("recaptcha_token", "")
-    # docker.env dosyasındaki SERVER_RECAPTCHA değerini okur
-    recaptcha_secret = os.environ.get("SERVER_RECAPTCHA")
+    recaptcha_secret = config("SERVER_RECAPTCHA")
 
-    # Google API'sine token'ı doğrulaması için istek gönderiyoruz
     verify_res = requests.post(
         'https://www.google.com/recaptcha/api/siteverify',
         data={'secret': recaptcha_secret, 'response': recaptcha_token}
     ).json()
 
-    # Google'dan gelen 'success' değeri False ise veya puan 0.5'ten düşükse (bot şüphesi)
     if not verify_res.get('success') or verify_res.get('score', 0) < 0.5:
-        return JsonResponse({
-            "ok": False,
-            "errors": {"bot": "Güvenlik doğrulamasından geçemediniz. Lütfen tekrar deneyin."}
-        }, status=400)
+        return JsonResponse({"ok": False, "errors": {"bot": "Güvenlik onayı alınamadı."}}, status=400)
 
-    # 3. VERİ KAYIT: Eğer her iki kontrolü de geçtiyse mesajı kaydet
+    # --- 2. VERİLERİ ALMA ---
     name = request.POST.get("name", "").strip()
     email = request.POST.get("email", "").strip()
     phone = request.POST.get("phone", "").strip()
     subject = request.POST.get("subject", "").strip()
     message = request.POST.get("message", "").strip()
 
-    # Temel boş alan kontrolü
-    if not name or not email or not message:
-        return JsonResponse({"ok": False, "errors": {"fields": "Lütfen zorunlu alanları doldurun."}}, status=400)
-
-    # Mesajı veritabanına ekle
-    ContactMessage.objects.create(
+    # --- 3. VERİTABANINA KAYIT ---
+    new_msg = ContactMessage.objects.create(
         name=name,
         email=email,
         phone=phone,
         subject=subject,
         message=message
     )
+
+    # --- 4. YÖNETİCİYE BİLGİ MAİLİ GÖNDERME (YENİ EKLEME) ---
+    try:
+        admin_mail_subject = f"Yeni İletişim Mesajı: {subject or 'Konu Yok'}"
+        admin_mail_content = (
+            f"Siteden yeni bir mesaj aldınız:\n\n"
+            f"Gönderen: {name}\n"
+            f"E-posta: {email}\n"
+            f"Telefon: {phone}\n"
+            f"Konu: {subject}\n\n"
+            f"Mesaj:\n{message}\n\n"
+            f"--- Bu mesaj veritabanına da kaydedilmiştir. ---"
+        )
+
+        send_mail(
+            subject=admin_mail_subject,
+            message=admin_mail_content,
+            from_email=config('EMAIL_HOST_USER'),
+            recipient_list=[config('EMAIL_HOST_USER')],  # Kendinize gönderiyorsunuz
+            fail_silently=True,  # Mail gitmezse bile kullanıcıya 'başarılı' dönsün (Hata vermesin)
+        )
+    except Exception as e:
+        print(f"Yönetici bilgilendirme maili gönderilemedi: {e}")
 
     return JsonResponse({"ok": True})
