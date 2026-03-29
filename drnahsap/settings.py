@@ -115,8 +115,3 @@ EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = f'DRN Ahşap Atölyesi <{EMAIL_HOST_USER}>'
 
 
-
-
-# Gmail SMTP kimlik doğrulama
-#EMAIL_HOST_USER = 'ryakar75@gmail.com'  # Gmail adresiniz
-#EMAIL_HOST_PASSWORD = 'hzez glji hbte jdhg'  # Gmail şifreniz (Bu aytakip için olandı. Değişecek)
